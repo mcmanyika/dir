@@ -1,0 +1,3959 @@
+{% extends "base.html" %}
+
+{% block header %}
+<style type="text/css">	
+	#physcal-scores tr td:first-child, #sleep-scores tr td:first-child { width: 10% }
+	#entry-header { margin-left: 5px }
+	#entry-header tr td { padding: 5px 0 5px 4px }
+	.control-tb tr td:first-child { width: 25% }
+	.control-tb tr td:first-child + td { width: 10% }
+	#part-b { margin-top: 20px; border: 1px solid #E0E0FF; border-radius: 10px; padding: 20px 10px; width: 98% }
+	#violation tr td:first-child, #deprivation tr td:first-child { width: 10% }
+	.score-items div:first-child  { width: 23% }
+	.score-items div:last-child  { width: 76% }
+	#incident-summary { margin-top: 10px; border-top: 1px dotted #F5F5FF; padding: 10px 0 }
+	.separate-cols { border-left: 3px solid #ccccff; }
+	#incident-victim { background-color: #FFFFCC; }
+	#incident-victim .field-label { margin-left: 6px }
+	#incident-victim .an-input-list li { padding: 3px 0 }
+	#cat-menu { width: 14%; margin-right: 8px; }
+	#cat-items { width: 84% }
+	#file-uploads, #acct-files { width: 100% }	
+	#entry-navigate { padding: 0; margin: 0 }
+	#entry-navigate li { font-size: 12px }
+	#categories { border: 1px solid #E0E0FF; border-radius: 3px; padding: 10px 5px; width: 98.5% }
+	#upload-entry-file { display: none }
+	.incident-types { list-style-type: none; padding: 0; margin: 0 }
+	.incident-types li { padding: 3px 0 }
+	.my-input-table tr td { padding: 5px 0; border-bottom: 1px solid #F0F0FF; }
+	.space-rows { padding: 5px 0 }
+	#event-date, #event-location { color: #003399; }	
+	#event-comments { color: #FF0000; }
+	.detention-box { padding: 5px 0 }	
+	#inc-list { margin: 0; padding: 0; list-style-type: none; }
+	#inc-list li { padding: 0; margin: 0 }
+	.inc-sub-class { color: #A52A2A }
+	.bottom-space { margin-bottom: 15px; }
+	.bottom-buffer { margin-bottom: 10px; }
+	#reporting-time { padding: 0; margin: 0 }
+	#reporting-time li { margin: 0; padding: 0 }
+	.general-checkboxes { padding: 2px 0 }
+	.general-item-list li, #general-doc-class li, #general-report-types li { padding: 2px 0 }
+	#weapons1 li, #weapons2 li { padding: 2px 0 }
+	.space-items-counselling { padding: 3px 0 }
+	#lookup-entries { display: none }
+    #add-perp-box { padding: 6px 4px; background-color: #F5F5FF; border-radius: 5px; display: none; margin-bottom: 2px }
+</style>
+{% endblock %}
+
+{% block content %}
+<form id="f-entries">
+	<table id="entry-header" class="just-table put-lines" style="width: 99.1%; margin-bottom: 15px">
+		<tr>
+			<td style="width: 15%">
+				<button id="btn-select-acct" name="btn-select-acct" type="button" style="margin-right: 5px">...</button>
+				<button id="btn-rmv-acct" name="btn-rmv-acct" type="button"><i class="icon-remove"></i></button>				
+				<span class="field-label">Account name</span>
+			</td>			
+			<td style="width: 9%"><span class="field-label">{{ labels.entry_date }}</span></td>
+			<td style="width: 9%"><span class="field-label">{{ labels.legacy_entry_no }}</span></td>
+			<td style="width: 9%"><span class="field-label">{{ labels.entry_refno }}</span></td>
+			<td style="width: 9%"><span class="field-label">{{ labels.national_id }}</span></td>
+			<td style="width: 6%"><span class="field-label">{{ labels.legacy_csu_no }}</span></td>
+			<td style="width: 3%"><span class="field-label">{{ labels.age }}</span></td>
+			<td class="separate-cols">
+				<button id="btn-event" name="btn-event" type="button" style="margin-right: 6px">...</button>
+				<button id="btn-rmv-event" name="btn-rmv-event" style="margin-right: 6px" type="button"><i class="icon-remove"></i></button>				
+				<span class="field-label">{{ labels.event_comments }}</span>
+			</td>
+			<td style="width: 5%"><span class="field-label">{{ labels.event_date }}</span></td>
+			<td style="width: 13%"><span class="field-label">{{ labels.event_location }}</span></td>
+		</tr>
+		<tr>
+			<td><a id="goto-account" href="#" style="font-weight: bold; font-size: 12px" target="_blank">{{ form.account_name }}</a></td>
+			<td>
+				<input id="{{ fields.entry_date }}" name="{{ fields.entry_date }}" type="text" class="input-small" value="{{ form.entry_date }}" placeholder="{{ labels.entry_date }}">
+			</td>
+			<td>
+				<input id="{{ fields.legacy_entry_no }}" name="{{ fields.legacy_entry_no }}" type="text" class="input-small" value="{{ form.legacy_entry_no }}" placeholder="{{ labels.legacy_entry_no }}">
+			</td>
+			<td><span id="reference-no" class="highlight-bold">{{ form.entry_refno }}</span></td>
+			<td><span id="nat-id" class="highlight-bold">{{ form.my_national_id }}</span></td>
+			<td><span id="csu-no" class="me-bold">{{ form.legacy_csu_no }}</span></td>
+			<td><span id="age" class="me-bold">{{ form.my_age }}</span></td>			
+			<td class="separate-cols"><span id="event-comments">{{ form.event_comments }}</span></td>
+			<td><span id="event-date">{% if form.event_path %}<a href="{{ form.event_path }}" target="_blank">{{ form.event_date }}</a>{% endif %}</span></td>
+			<td style="width: 16%"><span id="event-location">{{ form.event_location }}</span></td>
+		</tr>
+	</table>
+	<div id="categories">
+		<div id="cat-menu" class="block-container">
+			<ul id="entry-navigate" class="nav nav-pills nav-stacked">
+				{% for d in basket.entry_page_menus %}
+				<li id="{{ d.key_name }}">
+					<a href="#">
+						<strong id="{{ d.label_id }}" {% if not d.active %}style="display: none; font-size: 13px"{% endif %}>&raquo;&nbsp;&nbsp;</strong>{{ d.key_val }}					
+					</a>
+				</li>
+				{% endfor %}
+			</ul>
+		</div>
+		<div id="cat-items" class="block-container">
+			<div id="general" class="hide-block">
+				<div id="gen-first-row">					
+					<table class="table table-condensed table-bordered">
+						<tr>
+							<td style="width: 10%"><span class="field-label">{{ labels.general_visit_type }}</span></td>
+							<td style="width: 16%">
+								<div class="form-inline">
+									<select id="{{ fields.general_visit_type }}" name="{{ fields.general_visit_type }}" class="input-small">
+										<option value="">N/A</option>
+										{% for s in basket.visit_type %}
+										<option value="{{ s }}" {% if form.general_visit_type == s %}selected{% endif %}>{{ s }}</option>
+										{% endfor %}							
+									</select>
+									<input id="{{ fields.correlate_entry_no }}" name="{{ fields.correlate_entry_no }}" type="text" style="width: 50px" value="{{ form.correlate_entry_no }}" placeholder="Double-click">
+								</div>
+							</td>
+							<td style="width: 13%"><span class="field-label">{{ labels.project_name }}</span></td>
+							<td style="width: 15%"><input id="{{ fields.project_name }}" name="{{ fields.project_name }}" class="input-medium" type="text" value="{{ form.project_name }}" placeholder="{{ labels.project_name }}"></td>
+							<td style="width: 10%"><span class="field-label">{{ labels.seen_casualty_doc }}</span></td>
+							<td style="width: 14%; text-align: center">								
+								<input id="{{ fields.seen_casualty_doc }}" name="{{ fields.seen_casualty_doc }}" type="checkbox" {% if form.seen_casualty_doc %}checked{% endif %}>								
+							</td>
+							<td style="width: 10%"><span class="field-label">{{ labels.clinic_meds }}</span></td>
+							<td style="text-align: center">								
+								<input id="{{ fields.clinic_meds }}" name="{{ fields.clinic_meds }}" type="checkbox" {% if form.clinic_meds %}checked{% endif %}>																			
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div>
+									<button id="btn-general-clinician" type="button" style="margin-right: 6px">...</button>
+									<button id="btn-rmv-general-clinician" type="button"><i class="icon-remove"></i></button>
+								</div>
+								<div><span class="field-label">{{ labels.general_clinician  }}</span></div>
+							</td>
+							<td><span id="{{ fields.general_clinician }}">{{ form.general_clinician }}</span></td>
+							<td>
+								<div>
+									<button id="btn-general-doctor-acct" type="button">...</button>
+									<button id="btn-rmv-general-doctor-acct" type="button"><i class="icon-remove"></i></button>										
+								</div>
+								<div><span class="field-label">{{ labels.general_doctor_acct_id }}</span></div>
+							</td>
+							<td><span id="{{ fields.general_doctor }}">{{ form.general_doctor }}</span>	</td>
+							<td>
+								<span class="field-label">{{ labels.seen_clinic_doc }}</span>
+							</td>
+							<td style="text-align: center">								
+								<input id="{{ fields.seen_clinic_doc }}" name="{{ fields.seen_clinic_doc }}" type="checkbox" {% if form.seen_clinic_doc %}checked{% endif %}>														
+							</td>
+							<td>
+								<span class="field-label">{{ labels.radiography }}</span>
+							</td>
+							<td style="text-align: center">								
+								<input id="{{ fields.radiography }}" name="{{ fields.radiography }}" type="checkbox" {% if form.radiography %}checked{% endif %}>																							
+							</td>									
+						</tr>
+						<tr>
+							<td><span class="field-label">{{ labels.counsellor_acct }}</span></td>
+							<td>{{ form.counsellor_acct }}</td>
+							<td>
+                                <div>
+                                    <button id="btn-general-specialist-acct" type="button">...</button>
+                                    <button id="btn-rmv-general-specialist-acct" type="button"><i class="icon-remove"></i></button>
+                                </div>
+                                <div><span class="field-label">{{ labels.general_specialist_acct_id }}</span></div>
+							</td>
+							<td>
+                                <div><span id="{{ fields.general_specialist }}">{{ form.general_specialist }}</span></div>
+                            </td>
+							<td><span class="field-label">{{ labels.pharmacy_meds }}</span></td>
+							<td style="text-align: center">								
+								<input id="{{ fields.pharmacy_meds }}" name="{{ fields.pharmacy_meds }}" type="checkbox" {% if form.pharmacy_meds %}checked{% endif %}>														
+							</td>
+							<td><span class="field-label">{{ labels.general_labs }}</span></td>
+							<td style="text-align: center">								
+								<input id="{{ fields.general_labs }}" name="{{ fields.general_labs }}" type="checkbox" {% if form.general_labs %}checked{% endif %}>										
+							</td>
+						</tr>
+                        <tr>
+                            <td><span class="field-label">{{ labels.med_assessor_acct }}</span></td>
+                            <td>{{ form.med_assessor_acct }}</td>
+                            <td>
+                                <div>
+                                    <button id="btn-general-specialist2-acct" type="button">...</button>
+                                    <button id="btn-rmv-general-specialist2-acct" type="button"><i class="icon-remove"></i></button>
+                                </div>
+                                <div><span class="field-label">{{ labels.general_specialist2_acct_id }}</span></div>
+                            </td>
+                            <td>
+                                <div><span id="{{ fields.general_specialist2 }}">{{ form.general_specialist2 }}</span></div>
+                            </td>
+                            <td><span class="field-label">{{ labels.general_ct_scan }}</span></td>
+                            <td style="text-align: center">
+                                <input id="{{ fields.general_ct_scan }}" name="{{ fields.general_ct_scan }}" type="checkbox" {% if form.general_ct_scan %}checked{% endif %}>
+                            </td>
+                            <td><span class="field-label">{{ labels.general_doppler_scan }}</span></td>
+                            <td style="text-align: center">
+                                <input id="{{ fields.general_doppler_scan }}" name="{{ fields.general_doppler_scan }}" type="checkbox" {% if form.general_doppler_scan %}checked{% endif %}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="field-label">{{ labels.physiotherapist_acct }}</span></td>
+                            <td>{{ form.physiotherapist_acct }}</td>
+                            <td>
+                                <div>
+                                    <button id="btn-general-specialist3-acct" type="button">...</button>
+                                    <button id="btn-rmv-general-specialist3-acct" type="button"><i class="icon-remove"></i></button>
+                                </div>
+                                <div><span class="field-label">{{ labels.general_specialist3_acct_id }}</span></div>
+                            </td>
+                            <td>
+                                <div><span id="{{ fields.general_specialist3 }}">{{ form.general_specialist3 }}</span></div>
+                            </td>
+                            <td><span class="field-label">{{ labels.general_ultra_sound }}</span></td>
+                            <td style="text-align: center">
+                                <input id="{{ fields.general_ultra_sound }}" name="{{ fields.general_ultra_sound }}" type="checkbox" {% if form.general_ultra_sound %}checked{% endif %}>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+						<tr>
+							<td><span class="field-label">{{ labels.occupational_therapist_acct }}</span></td>
+							<td>{{ form.occupational_therapist_acct }}</td>
+							<td><span class="field-label">{{ labels.psych_acct }}</span></td>
+							<td>{{ form.psych_acct }}</td>
+							<td><span class="field-label">{{ labels.x_out_of_harare_assessment }}</span></td>
+							<td>
+                                <input id="{{ fields.x_out_of_harare_assessment }}" name="{{ fields.x_out_of_harare_assessment }}" type="text" class="input-medium" value="{{ form.x_out_of_harare_assessment }}" placeholder="{{ labels.x_out_of_harare_assessment }}">
+                            </td>
+							<td></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td><span class="field-label">{{ labels.hosp_clinician_acct }}</span></td>
+							<td>{{ form.hosp_clinician_acct }}</td>
+							<td><span class="xtra-label">{{ labels.legal_aid_acct }}</span></td>
+							<td>{{ form.legal_aid_acct }}</td>
+							<td><span class="field-label">{{ labels.verify_data_entry }}</span></td>
+							<td style="text-align: center">
+                                <input id="{{ fields.verify_data_entry }}" name="{{ fields.verify_data_entry }}" type="checkbox" class="verify-data-entry" {% if form.verify_data_entry %}checked{% endif %}>
+                                <div style="display: none">
+                                    <input id="{{ fields.is_hospitalized }}" name="{{ fields.is_hospitalized }}" type="checkbox">
+                                </div>
+                            </td>
+							<td><span class="field-label">Verified by</span></td>
+							<td style="text-align: center"><a id="verified-by-who" href="#" class="dont-follow-link"><i class="icon-user"></i></a></td>
+						</tr>
+						<tr>
+							<td><span class="field-label">{{ labels.hospital_acct }}</span></td>
+							<td>{{ form.hospital_acct }}</td>
+							<td><span class="xtra-label">{{ labels.legal_rep_acct }}</span></td>
+							<td>{{ form.legal_rep_acct }}</td>
+							<td></td>
+							<td></td>
+							<td><span class="field-label">{% if form.is_ongoing %}Incident currently on going{% endif %}</span></td>
+							<td>{% if form.is_ongoing %}Yes{% endif %}</td>
+						</tr>
+						<tr>
+							<td><span class="field-label">{{ labels.attending_dr_acct }}</span></td>
+							<td>{{ form.attending_dr_acct }}</td>
+							<td><span class="field-label">{{ labels.attending_dr2_acct }}</span></td>
+							<td>{{ form.attending_dr2_acct }}</td>
+							<td><span class="field-label">{{ labels.general_referredby }}</span></td>
+							<td>
+                                <input id="{{ fields.general_referredby }}" name="{{ fields.general_referredby }}" type="text" class="input-medium" value="{{ form.general_referredby }}" placeholder="{{ labels.general_referredby }}">
+                            </td>
+							<td></td>
+							<td></td>
+						</tr>
+					</table>				
+				</div>				
+				<div id="gen-second-row">
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.general_presentation }}</span><br>
+						<textarea id="{{ fields.general_presentation }}" name="{{ fields.general_presentation }}" rows="6" class="input-xlarge" placeholder="{{ labels.general_presentation }}">{{ form.general_presentation }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.general_intervention }}</span><br>
+						<textarea id="{{ fields.general_intervention }}" name="{{ fields.general_intervention }}" rows="6" class="input-xlarge" placeholder="{{ labels.general_intervention }}">{{ form.general_intervention }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.general_referral }}</span><br>
+						<textarea id="{{ fields.general_referral }}" name="{{ fields.general_referral }}" rows="6" class="input-xlarge" placeholder="{{ labels.general_referral }}">{{ form.general_referral }}</textarea>
+					</div>
+				</div>				
+				<div id="gen-third-row">
+					<div style="display: none">
+						<input id="{{ fields.general_doctor_acct_id }}" name="{{ fields.general_doctor_acct_id }}" value="{{ form.general_doctor_acct_id }}" type="hidden">
+						<input id="{{ fields.general_specialist_acct_id }}" name="{{ fields.general_specialist_acct_id }}" value="{{ form.general_specialist_acct_id }}" type="hidden">
+                        <input id="{{ fields.general_specialist2_acct_id }}" name="{{ fields.general_specialist2_acct_id }}" value="{{ form.general_specialist2_acct_id }}" type="hidden">
+                        <input id="{{ fields.general_specialist3_acct_id }}" name="{{ fields.general_specialist3_acct_id }}" value="{{ form.general_specialist3_acct_id }}" type="hidden">
+						<input id="{{ fields.general_clinician_acct_id }}" name="{{ fields.general_clinician_acct_id }}" value="{{ form.general_clinician_acct_id }}" type="hidden">
+					</div>
+				</div>				
+				<div id="gen-fourth-row" style="margin: 15px 0">
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.general_comments }}</span><br>
+						<textarea id="{{ fields.general_comments }}" name="{{ fields.general_comments }}" rows="6" class="input-xlarge" placeholder="{{ labels.general_comments }}">{{ form.general_comments }}</textarea>							
+					</div>									
+				</div>
+				<div class="a-line" style="margin: 15px 0"></div>
+				<div id="gen-fifth-row">
+					<div class="my-inline" style="width: 49%">
+						<div>
+							<span class="field-label">Report(s) Submitted</span>
+						</div>
+						<div class="my-inline" style="width: 49%">
+							<ul id="general-report-types" class="simple-vertical">
+								{% for v in basket.report_types1 %}
+								<li>
+									<label class="checkbox">
+										<input id="{{ v.ukey }}" name="{{ v.ukey }}" type="checkbox" style="margin-right: 5px" {% if v.active %}checked{% endif %}>{{ v.key_name }}
+									</label>									
+								</li>
+								{% endfor %}
+							</ul>							
+						</div>
+						<div class="my-inline" style="width: 49%">
+							<ul id="general-report-types" class="simple-vertical">
+								{% for v in basket.report_types2 %}
+								<li>
+									<label class="checkbox">
+										<input id="{{ v.ukey }}" name="{{ v.ukey }}" type="checkbox" style="margin-right: 5px" {% if v.active %}checked{% endif %}>{{ v.key_name }}
+									</label>									
+								</li>
+								{% endfor %}
+							</ul>							
+						</div>													
+					</div>
+					<div class="my-inline" style="width: 49%">
+						<span class="field-label">Document Class</span><br>
+						<ul id="general-doc-class" class="simple-vertical">
+							{% for d in basket.doc_class %}
+							<li>
+								<label class="checkbox">
+									<input id="{{ d.ukey }}" name="{{ d.ukey }}" type="checkbox" style="margin-right: 5px" {% if d.active %}checked{% endif %}>{{ d.key_name }}:&nbsp;{{ d.key_val }}
+								</label>								
+							</li>
+							{% endfor %}
+						</ul>
+					</div>					
+				</div>				
+				<div style="display: none">
+					<input id="{{ fields.x_document_class }}" name="{{ fields.x_document_class }}" type="hidden" value="{{ form.x_document_class }}">
+					<input id="{{ fields.x_specialty_referral }}" name="{{ fields.x_specialty_referral }}" type="hidden" value="{{ form.x_specialty_referral }}">
+					<input id="{{ fields.x_doctor_referral }}" name="{{ fields.x_doctor_referral }}" type="hidden" value="{{ form.x_doctor_referral }}">
+					<input id="{{ fields.x_affidavit }}" name="{{ fields.x_affidavit }}" type="hidden" value="{{ form.x_affidavit }}">					
+					<input id="{{ fields.x_hospital_reports }}" name="{{ fields.x_hospital_reports }}" type="hidden" value="{{ form.x_hospital_reports }}">
+					<input id="{{ fields.x_hospital_admission }}" name="{{ fields.x_hospital_admission }}" type="hidden" value="{{ form.x_hospital_admission }}">
+				</div>
+			</div>
+			<div id="entry-incident-1" class="hide-block">
+				<div class="bottom-space">
+					<div class="my-inline" style="width: 54%">
+						<div>
+                            <span class="field-label">Narrative(s)</span>
+                        </div>
+                        <div style="height: 240px; width: 98%; overflow: scroll">
+                            <div class="incident-narratives">
+                                <textarea id="{{ fields.comments }}" name="{{ fields.comments }}" class="input-xxlarge" rows="8" placeholder="{{ labels.comments }}">{{ form.comments }}</textarea>
+                            </div>
+                        </div>
+					</div>
+					<div class="my-inline" style="width: 43%">
+                        <div style="padding-bottom: 6px; margin-bottom: 7px">
+                        	<label class="checkbox">
+								<input id="{{ fields.is_ongoing }}"name="{{ fields.is_ongoing }}" type="checkbox" style="margin-right: 5px" {% if form.is_ongoing %}checked{% endif %}>
+								<span class="field-label"><strong>{{ labels.is_ongoing }}</strong></span>
+                            </label>
+                        </div>
+						<div><span class="field-label">Detention Details</span></div>				
+						<table class="table table-bordered">
+							<tr>
+								<td style="width: 25%"><span class="field-label">{{ labels.detained_on }}</span></td>
+								<td style="width: 25%">
+									<input id="{{ fields.detained_on }}" name="{{ fields.detained_on }}" type="text" class="input-small" value="{{ form.detained_on }}" placeholder="{{ labels.detained_on }}">
+								</td>
+								<td style="width: 25%"><span class="field-label">{{ labels.released_on }}</span></td>
+								<td>
+									<input id="{{ fields.released_on }}" name="{{ fields.released_on }}" type="text" class="input-small" value="{{ form.released_on }}" placeholder="{{ labels.released_on }}">
+								</td>
+							</tr>
+							<tr>
+								<td><span class="field-label">{{ labels.ill_treatment }}</span></td>
+								<td>
+									<label class="checkbox">
+										<input id="{{ fields.ill_treatment }}" name="{{ fields.ill_treatment }}" style="margin-right: 5px" type="checkbox" {% if form.ill_treatment %}checked{% endif %}>
+									</label>
+								</td>
+								<td><span class="field-label">{{ labels.ill_treatment_after }}</span></td>
+								<td>
+									<label class="checkbox">
+										<input id="{{ fields.ill_treatment_after }}" name="{{ fields.ill_treatment_after }}" style="margin-right: 5px" type="checkbox" {% if form.ill_treatment_after %}checked{% endif %}>																	
+									</label>
+								</td>
+							</tr>	
+							<tr>
+								<td><span class="field-label">{{ labels.last_experience }}</span></td>
+								<td>
+									<input id="{{ fields.last_experience }}" name="{{ fields.last_experience }}" type="text" class="input-small" value="{{ form.last_experience }}" placeholder="{{ labels.last_experience }}">
+								</td>
+								<td><span class="field-label">{{ labels.last_exp_time_of_date }}</span></td>
+								<td>									
+									<select id="{{ fields.last_exp_time_of_date }}" name="{{ fields.last_exp_time_of_date }}" class="input-small">
+										<option value="{{ dictionary.idefault_option }}">-- N/A --</option>
+										{% for x, y in basket.day_times %}
+										<option value="{{ x }}" {% if form.last_exp_time_of_date == x %}selected{% endif %}>{{ y }}</option>
+										{% endfor %}
+									</select>
+								</td>
+							</tr>																		
+						</table>
+					</div>
+				</div>
+				<div class="a-line" style="margin: 10px 0"></div>
+				<div>
+					<div class="block-container" style="width: 23%">
+						<div><span class="field-label"><strong>Primary Incident</strong></span></div>
+						<div style="margin-bottom: 5px">
+							<ul id="inc-list">
+								<li>
+									<input name="{{ fields.incident_detail_id }}" type="radio" style="margin-right: 5px" value="{{ dictionary.idefault_option }}">N/A
+								</li>
+								{% for d in basket.primary_first %}
+								<li>								
+									<input name="{{ fields.incident_detail_id }}" type="radio" style="margin-right: 5px" value="{{ d.id }}" {% if form.incident_detail_id == d.id %}checked{% endif %}>
+									{% if d.is_other %}
+									<input id="{{ fields.other_incident }}" name="{{ fields.other_incident }}" type="text" class="input-medium" value="{{ form.other_incident }}" placeholder="{{ d.type_incident_detail }}">
+									{% else %}<span style="color: #FF0000">{{ d.type_incident_detail }}</span>{% endif %}
+								</li>
+								{% endfor %}
+								{% for d in basket.primary_second %}
+								<li>
+									<input name="{{ fields.incident_detail_id }}" type="radio" style="margin-right: 5px" value="{{ d.id }}" {% if form.incident_detail_id == d.id %}checked{% endif %}>
+									{% if d.is_other %}
+									<input id="{{ fields.other_incident }}" name="{{ fields.other_incident }}" type="text" class="input-medium" value="{{ form.other_incident }}" placeholder="{{ d.type_incident_detail }}">
+									{% else %}<span>{{ d.type_incident_detail }}</span>{% endif %}
+								</li>
+								{% endfor %}
+							</ul>
+						</div>
+					</div>
+					<div class="block-container" style="width: 38%">
+						<table class="a-table my-input-table">
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.incident_date }}</span><br>
+									<input id="{{ fields.incident_date }}" name="{{ fields.incident_date }}" class="input-small" type="text" value="{{ form.incident_date }}" placeholder="{{ labels.incident_date }}">
+                                    {% if form.incident_period %}<span style="margin-left: 5px; color: #0000FF"><strong>{{ form.incident_period }}</strong></span>{% endif %}
+								</td>
+								<td>
+									<span class="field-label">{{ labels.incident_time_hour }}</span><br>
+									<select id="{{ fields.incident_time_hour }}" name="{{ fields.incident_time_hour }}" class="input-mini">
+										{% for h in basket.hours %}
+										<option value="{{ h }}" {% if h == form.incident_time_hour %}selected{% endif %}>{{ h }}</option>
+										{% endfor %}
+									</select>:
+									<select id="{{ fields.incident_time_minute }}" name="{{ fields.incident_time_minute }}" class="input-mini">
+										{% for m in basket.minutes %}
+										<option value="{{ m }}" {% if m == form.incident_time_minute %}selected{% endif %}>{{ m }}</option>
+										{% endfor %}
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.time_of_day }}</span><br>
+									<select id="{{ fields.time_of_day }}" name="{{ fields.time_of_day }}" class="input-small">
+										<option value="{{ dictionary.idefault_option }}">N/A</option>
+										{% for x, y in basket.day_times %}
+										<option value="{{ x }}" {% if form.time_of_day == x %}selected{% endif %}>{{ y }}</option>
+										{% endfor %}
+									</select>
+								</td>
+								<td>
+									<span class="field-label">{{ labels.rpt_agency_acct_id }}</span><br>
+									<button id="btn-select-agency" type="button" style="margin-right: 6px">...</button>
+									<button id="btn-remove-agency" type="button"><i class="icon-remove"></i></button><br><br>
+									<strong><span id="{{ fields.rpt_agency_acct_name }}">{{ form.rpt_agency_acct_name }}</span></strong>
+									<input id="{{ fields.rpt_agency_acct_id }}" name="{{ fields.rpt_agency_acct_id }}" value="{{ form.rpt_agency_acct_id }}" type="hidden">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.report_no }}</span><br>
+									<input id="{{ fields.report_no }}" name="{{ fields.report_no }}" type="text" class="input-small" value="{{ form.report_no }}" placeholder="{{ labels.report_no }}">
+								</td>
+								<td>
+									<span class="field-label">{{ labels.rpt_agency_remarks }}</span><br>
+									<textarea id="{{ fields.rpt_agency_remarks }}" name="{{ fields.rpt_agency_remarks }}" class="input-large" rows="3" placeholder="{{ labels.rpt_agency_remarks }}">{{ form.rpt_agency_remarks }}</textarea>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.adult_witnesses }}</span><br>
+									<input id="{{ fields.adult_witnesses }}" name="{{ fields.adult_witnesses }}" type="checkbox" {% if form.adult_witnesses %}checked{% endif %}>
+								</td>
+								<td>
+									<span class="field-label">{{ labels.child_witnesses }}</span><br>
+									<input id="{{ fields.child_witnesses }}" name="{{ fields.child_witnesses }}" type="checkbox" {% if form.child_witnesses %}checked{% endif %}>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.family_members_violence }}</span><br>
+									<input id="{{ fields.family_members_violence }}" name="{{ fields.family_members_violence }}" type="checkbox" {% if form.family_members_violence %}checked{% endif %}>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+						<div id="incident-type-extras">
+							<div id="incident-type-options" style="display: none; margin-top: 10px">
+								<ul id="incident-type-items" class="an-input-list"></ul>
+							</div>
+						</div>						
+					</div>
+					<div class="block-container" style="width: 34%; margin-left: 10px">
+						<table class="a-table space-rows">
+							<tr>
+								<td>
+                                    <div class="my-inline" style="width: 49%">
+									    <span class="field-label"><strong>{{ labels.location_type_id }}</strong></span><br>
+									    <select id="{{ fields.location_type_id }}" name="{{ fields.location_type_id }}" class="input-medium">
+                                            <option value="{{ dictionary.idefault_option }}">N/A</option>
+                                            {% for x, y in basket.locations %}
+                                            <option value="{{ x }}" {% if x == form.location_type_id %}selected{% endif %}>{{ y }}</option>
+                                            {% endfor %}
+                                       </select>
+                                    </div>
+                                    <div class="my-inline" style="width: 49%">
+									    <span class="field-label">{{ labels.address }}</span><br>
+									    <textarea id="{{ fields.address }}" name="{{ fields.address }}" class="input-large" rows="3" placeholder="{{ labels.address }}">{{ form.address }}</textarea>
+                                    </div>
+								</td>
+							</tr>
+						</table>
+						<table class="a-table space-rows">
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.area }}</span><br>
+									<input id="{{ fields.area }}" name="{{ fields.area }}" class="input-medium" type="text" value="{{ form.area }}" placeholder="{{ labels.area }}">
+								</td>							
+								<td>
+									<span class="field-label">{{ labels.town_city }}</span><br>
+									<input id="{{ fields.town_city }}" name="{{ fields.town_city }}" class="input-medium" type="text" value="{{ form.town_city }}" placeholder="{{ labels.town_city }}">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.province_id }}</span><br>
+									<select id="{{ fields.province_id }}" name="{{ fields.province_id }}" class="input-medium">
+										{% for x, y in basket.provinces %}
+										<option value="{{ x }}" {% if form.province_id == x %}selected{% endif %}>{{ y }}</option>
+										{% endfor %}
+									</select>								
+								</td>							
+								<td>
+									<span class="field-label">{{ labels.district_id }}</span><br>								
+									<select id="{{ fields.district_id }}" name="{{ fields.district_id }}" class="input-medium">
+										<option value="{{ dictionary.idefault_option }}">N/A</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.country }}</span><br>
+									<select id="{{ fields.country }}" name="{{ fields.country }}" class="input-medium">
+										<option value="{{ dictionary.default_option }}">N/A</option>
+										{% for k, v in basket.countries %}
+										<option value="{{ k }}" {% if k == form.country %}selected{% endif %}>{{ v }}</option>
+										{% endfor %}
+									</select>
+								</td>
+								<td>
+									<span class="field-label">{{ labels.constituency }}</span><br>
+									<input id="{{ fields.constituency }}" name="{{ fields.constituency }}" class="input-medium" type="text" value="{{ form.constituency }}" placeholder="{{ labels.constituency }}">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.ward }}</span><br>
+									<select id="{{ fields.ward }}" name="{{ fields.ward }}" class="input-medium">
+										<option value="{{ dictionary.default_option }}">N/A</option>
+										{% for w in basket.wards %}
+										<option value="{{ w }}" {% if w == form.ward %}selected{% endif %}>{{ w }}</option>
+										{% endfor %}
+									</select>
+								</td>
+								<td>
+									<span class="field-label">{{ labels.school }}</span><br>
+									<input id="{{ fields.school }}" name="{{ fields.school }}" type="text" class="input-medium" value="{{ form.school }}" placeholder="{{ labels.school }}">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="field-label">{{ labels.village }}</span><br>
+									<input id="{{ fields.village }}" name="{{ fields.village }}" type="text" class="input-medium" value="{{ form.village }}" placeholder="{{ labels.village }}">
+								</td>
+								<td>
+									<span class="field-label">{{ labels.growthpoint }}</span><br>
+									<input id="{{ fields.growthpoint }}" name="{{ fields.growthpoint }}" type="text" class="input-medium" value="{{ form.growthpoint }}" placeholder="{{ labels.growthpoint }}">
+								</td>
+							</tr>
+						</table>
+						<table class="table table-bordered">
+							<tr>
+                                <td style="width: 15%">
+                                    <button id="btn-lookup-coords" type="button">...</button>
+                                </td>
+                                <td style="width: 42%">
+                                    <div><span class="field-label">{{ labels.latitude }}</span></div>
+                                    <div><input id="{{ fields.latitude }}" name="{{ fields.latitude }}" type="text" class="input-small" value="{{ form.latitude }}" placeholder="{{ labels.latitude }}"></div>
+                                </td>
+								<td>
+                                    <div><span class="field-label">{{ labels.longitude }}</span></div>
+                                    <div><input id="{{ fields.longitude }}" name="{{ fields.longitude }}" type="text" class="input-small" value="{{ form.longitude }}" placeholder="{{ labels.longitude }}"></div>
+								</td>
+							</tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <div>
+                                        <button id="btn-clear-location-code" type="button" style="margin-right: 5px"><i class="icon-remove"></i></button>
+                                        <span class="field-label">{{ labels.location_code }}</span>
+                                    </div>
+                                    <div style="margin-top: 15px"><strong id="location-code">{{ form.location_code }}</strong></div>
+                                </td>
+                            </tr>
+						</table>
+                        <div id="pep-box">
+                            <div id="add-perp-box">
+                                <div class="form-inline" style="text-align: center">
+                                    <input id="{{ basket.parameters.perpetrator_name }}" name="{{ basket.parameters.perpetrator_name }}" type="text" class="input-medium" style="margin-right: 4px" placeholder="Perpetrator name">
+                                    <input id="{{ basket.parameters.perpetrator_affiliation }}" name="{{ basket.parameters.perpetrator_affiliation }}" type="text" class="input-medium" style="margin-right: 6px" placeholder="Perpetrator's affiliation">
+                                </div>
+                                <div style="margin-top: 5px">
+                                    <div class="my-inline" style="width: 47%; padding-left: 9px">
+                                        <button id="btn-add-perp" type="button"><i class="fa fa-plus"></i></button>
+                                        <button id="btn-rmv-perp" type="button"><i class="fa fa-times"></i></button>
+                                        <input id="perp-acct-delete-id" type="hidden" value="0">
+                                    </div>
+                                    <div class="my-inline" style="width: 47%">
+                                        <select id="{{ basket.parameters.operand }}" name="{{ basket.parameters.operand }}" class="input-small">
+                                            <option value="contains">Contains</option>
+                                            <option value="equalto">Equal To</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <table id="inc-peps" class="table table-bordered table-condensed block-max-width">
+                                <tr>
+                                    <th style="width: 10%">
+                                        <div><button id="btn-show-perp" type="button" style="margin-right: 6px"><i class="fa fa-chevron-up"></i></button></div>
+                                        <div><button id="btn-hide-perp" type="button"><i class="fa fa-chevron-down"></i></button></div>
+                                    </th>
+                                    <th>Perpetrator</th>
+                                    <th style="width: 20%">Affiliation</th>
+                                </tr>
+                            </table>
+                            <div class="pagination" style="text-align: center"><ul id="pep-pages"></ul></div>
+                        </div>
+					</div>
+				</div>
+                <div style="padding-top: 20px">
+                    <div class="my-inline" style="width: 55%;">
+                        <table id="witnesses-table" class="table table-bordered table-condensed">
+                            <tr>
+                                <th style="width: 30%">
+                                    <button id="select-witness" type="button"><i class="fa fa-plus"></i></button>
+                                    <span style="margin-left: 6px">Witness' Name</span>
+                                </th>
+                                <th>Address</th>
+                                <th style="width: 30%">Remarks</th>
+                            </tr>
+                        </table>
+                        <div class="pagination"><ul id="witness-pages"></ul></div>
+                    </div>
+                    <div class="my-inline" style="width: 44%">
+                        <table id="affiliations-list" class="table table-bordered table-condensed">
+                            <tr>
+                                <th style="width: 9%">
+                                    <button id="btn-add-affiliation" type="button"><i class="fa fa-plus"></i></button>
+                                </th>
+                                <th>Victim's Affiliation</th>
+                                <th style="width: 25%">Role</th>
+                            </tr>
+                        </table>
+                        <div class="pagination" style="text-align: center"><ul id="affiliation-pages"></ul></div>
+                    </div>
+                </div>
+			</div>
+			<div id="entry-incident-2">
+				<div class="block-container block-max-width" style="width: 29%">
+					<div><span id="label-violation" class="field-label"><strong>Secondary Violations</strong></span></div>
+					<ul id="secondary-violations" class="an-input-list">
+						{% for k in basket.secondary_violation %}
+						<li>
+							{% if k.is_other %}
+							<input id="{{ k.ukey }}" name="{{ k.ukey }}" class="secondary-vio-item" type="checkbox" {% if k.active %}checked{% endif %}>&nbsp;
+							<input id="{{ k.other_ukey }}" name="{{ k.other_ukey }}" type="text" class="input-small" value="{{ k.other_txt }}" placeholder="{{ k.type_incident_detail }}">							
+							{% else %}
+							<label class="checkbox">
+								<input id="{{ k.ukey }}" name="{{ k.ukey }}" type="checkbox" class="secondary-vio-item" {% if k.active %}checked{% endif %}>&nbsp;<span class="no-remove">{{ k.type_incident_detail }}</span>
+							</label>							
+							{% endif %}
+                            <ul id="{{ k.child_key }}" class="secondary-children"></ul>
+						</li>
+						{% endfor %}
+					</ul>											
+				</div>
+				<div class="block-container block-max-width" style="width: 35%">
+                    <div><span id="label-violation" class="field-label"><strong>At time of assault (if assaulted)</strong></span></div>
+                    <div>
+                        <div class="my-inline" style="width: 49%">
+                            <ul class="an-input-list">
+                                {% for m in basket.at_time_of_assault_a %}
+                                <li>
+                                    {% if m.is_other %}
+                                    <input id="{{ m.ukey }}" name="{{ m.ukey }}" type="checkbox" style="margin-right: 5px" {% if m.active %}checked{% endif %}>
+                                    <input id="{{ m.other_ukey }}" name="{{ m.other_ukey }}" type="text" class="input-small" value="{{ m.other_txt }}" placeholder="{{ m.type_incident_detail }}">
+                                    {% else %}
+                                    <label class="checkbox">
+                                        <input id="{{ m.ukey }}" name="{{ m.ukey }}" type="checkbox" style="margin-right: 5px" {% if m.active %}checked{% endif %}><span class="no-remove">{{ m.type_incident_detail }}</span>
+                                    </label>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="my-inline" style="width: 49%">
+                            <ul class="an-input-list">
+                                {% for m in basket.at_time_of_assault_b %}
+                                <li>
+                                    {% if m.is_other %}
+                                    <input id="{{ m.ukey }}" name="{{ m.ukey }}" type="checkbox" style="margin-right: 5px" {% if m.active %}checked{% endif %}>
+                                    <input id="{{ m.other_ukey }}" name="{{ m.other_ukey }}" type="text" class="input-small" value="{{ m.other_txt }}" placeholder="{{ m.type_incident_detail }}">
+                                    {% else %}
+                                    <label class="checkbox">
+                                        <input id="{{ m.ukey }}" name="{{ m.ukey }}" type="checkbox" style="margin-right: 5px" {% if m.active %}checked{% endif %}><span class="no-remove">{{ m.type_incident_detail }}</span>
+                                    </label>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+					<div style="margin-top: 15px"><span id="label-violation" class="field-label"><strong>Violation Reason</strong></span></div>
+					<ul id="violation-reasons" class="an-input-list">
+						{% for v in basket.violation_reason  %}
+						<li>
+							{% if v.is_other %}
+							<input id="{{ v.ukey }}" name="{{ v.ukey }}" type="checkbox" {% if v.active %}checked{% endif %}>&nbsp;
+							<input id="{{ v.other_ukey }}" name="{{ v.other_ukey }}" type="text" class="input-small" value="{{ v.other_txt }}" placeholder="{{ v.type_incident_detail }}">
+							{% else %}
+							<label class="checkbox">
+								<input id="{{ v.ukey }}" name="{{ v.ukey }}" type="checkbox" {% if v.active %}checked{% endif %}>&nbsp;{{ v.type_incident_detail }}
+							</label>
+							{% endif %}
+						</li>
+						{% endfor %}
+					</ul>								
+					<div style="margin: 15px 0 0 0"><span id="label-violation-frequency" class="field-label"><strong>Frequency of Violation(s)</strong></span></div>
+					<ul id="violation-frequency" class="an-input-list">
+						{% for v in basket.violation_frequency  %}
+						<li>
+							{% if v.is_other %}
+							<input id="{{ v.ukey }}" name="{{ v.ukey }}" type="checkbox" {% if v.active %}checked{% endif %}>&nbsp;
+							<input id="{{ v.other_ukey }}" name="{{ v.other_ukey }}" type="text" class="input-small" value="{{ v.other_txt }}" placeholder="{{ v.type_incident_detail }}">
+							{% else %}
+							<label class="checkbox">
+								<input id="{{ v.ukey }}" name="{{ v.ukey }}" type="checkbox" {% if v.active %}checked{% endif %}>&nbsp;{{ v.type_incident_detail }}
+							</label>
+							{% endif %}
+						</li>
+						{% endfor %}
+					</ul>					
+					<div style="margin: 15px 0 0 0"><span id="label-incident-victim" class="field-label"><strong>Types of weapons used</strong></span></div>
+					<div>
+						<div class="my-inline" style="width: 48%">
+							<ul id="weapons1" class="simple-vertical">
+								{% for w in basket.types_of_weapons1 %}
+								<li>
+                                    {% if w.is_other %}
+                                        <input id="{{ w.ukey }}" name="{{ w.ukey }}" type="checkbox" style="margin-right: 5px" {% if w.active %}checked{% endif %}>
+                                        <input id="{{ fields.other_weapons_used }}" name="{{ fields.other_weapons_used }}" type="text" class="input-small" value="{{ form.other_weapons_used }}" placeholder="{{ labels.other_weapons_used }}">
+                                    {% else %}
+									<label class="checkbox">
+										<input id="{{ w.ukey }}" name="{{ w.ukey }}" type="checkbox" style="margin-right: 5px" {% if w.active %}checked{% endif %}>{{ w.weapon }}
+									</label>
+                                    {% endif %}
+								</li>
+								{% endfor %}
+							</ul>
+						</div>
+						<div class="my-inline" style="width: 48%">
+							<ul id="weapons2" class="simple-vertical">
+								{% for w in basket.types_of_weapons2 %}
+								<li>
+                                    {% if w.is_other %}
+                                        <input id="{{ w.ukey }}" name="{{ w.ukey }}" type="checkbox" style="margin-right: 5px" {% if w.active %}checked{% endif %}>
+                                        <input id="{{ fields.other_weapons_used }}" name="{{ fields.other_weapons_used }}" type="text" class="input-small" value="{{ form.other_weapons_used }}" placeholder="{{ labels.other_weapons_used }}">
+                                    {% else %}
+									<label class="checkbox">
+										<input id="{{ w.ukey }}" name="{{ w.ukey }}" type="checkbox" style="margin-right: 5px" {% if w.active %}checked{% endif %}>{{ w.weapon }}
+									</label>
+                                    {% endif %}
+								</li>
+								{% endfor %}								
+							</ul>							
+						</div>						
+					</div>
+				</div>
+				<div class="block-container block-max-width" style="width: 32%">
+					<div><span id="label-deprivation" class="field-label"><strong>Deprivation suffered</strong></span></div>
+					<ul id="deprivation" class="an-input-list">
+						{% for d in basket.deprivation %}
+						<li>
+							{% if d.is_other %}
+							<input id="{{ d.ukey }}" name="{{ d.ukey }}" type="checkbox" {% if d.active %}checked{% endif %}>&nbsp;
+							<input id="{{ d.other_ukey }}" name="{{ d.other_ukey }}" type="text" class="input-small" value="{{ d.other_txt }}" placeholder="{{ d.type_incident_detail }}">
+							{% else %}
+							<label class="checkbox">
+								<input id="{{ d.ukey }}" name="{{ d.ukey }}" type="checkbox" {% if d.active %}checked{% endif %}>&nbsp;{{ d.type_incident_detail }}
+							</label>
+							{% endif %}
+						</li>
+						{% endfor %}
+					</ul>
+					<div style="margin: 15px 0 0 0"><span id="label-sensory" class="field-label"><strong>Sensory over stimulation suffered</strong></span></div>
+					<ul id="sensory-over-stimulate" class="an-input-list">				
+						{% for s in basket.sensory_over_stimulation  %}
+						<li>
+							{% if s.is_other %}
+							<input id="{{ s.ukey }}" name="{{ s.ukey }}" type="checkbox" {% if s.active %}checked{% endif %}>&nbsp;
+							<input id="{{ s.other_ukey }}" name="{{ s.other_ukey }}" type="text" class="input-small" value="{{ s.other_txt }}" placeholder="{{ s.type_incident_detail }}">					
+							{% else %}
+							<label class="checkbox">
+								<input id="{{ s.ukey }}" name="{{ s.ukey }}" type="checkbox" {% if s.active %}checked{% endif %}>&nbsp;{{ s.type_incident_detail }}
+							</label>
+							{% endif %}
+						</li>
+						{% endfor %}				
+					</ul>
+					<div><span id="label-unconsciousness" class="field-label"><strong>Lose Consciousness</strong></span></div>
+					<ul id="unconsciousness" class="an-input-list">
+						{% for d in basket.unconsciousness %}
+						<li>
+							{% if d.is_other %}
+							<input id="{{ d.ukey }}" name="{{ d.ukey }}" type="checkbox" {% if d.active %}checked{% endif %}>&nbsp;
+							<input id="{{ d.other_ukey }}" name="{{ d.other_ukey }}" type="text" class="input-small" value="{{ d.other_txt }}" placeholder="{{ d.type_incident_detail }}">
+							{% else %}
+							<label class="checkbox">
+								<input id="{{ d.ukey }}" name="{{ d.ukey }}" type="checkbox" {% if d.active %}checked{% endif %}>&nbsp;{{ d.type_incident_detail }}
+							</label>
+							{% endif %}
+						</li>
+						{% endfor %}
+					</ul>					
+				</div>
+			</div>
+			<div id="entry-incident-3">
+				<table class="table table-bordered" style="margin-top: 15px">
+					<tr>
+						<td style="width: 8%">
+							<span class="sombre-label">{{ labels.dead_or_missing }}</span>
+						</td>
+						<td style="width: 17%; padding-left: 15px">
+							<ul class="simple-vertical">
+								<li>
+									<input name="{{ fields.dead_or_missing }}" type="radio" style="margin-right: 6px" value="0">N/A
+								</li>
+								<li>
+									<input name="{{ fields.dead_or_missing }}" type="radio" style="margin-right: 6px" value="1" {% if form.dead_or_missing == 1 %}checked{% endif %}>Missing
+								</li>
+								<li>
+									<input name="{{ fields.dead_or_missing }}" type="radio" style="margin-right: 6px" value="2" {% if form.dead_or_missing == 2 %}checked{% endif %}>Dead
+								</li>
+							</ul>							
+						</td>
+						<td style="width: 8%">
+							<span class="sombre-label">{{ labels.case_reported }}</span>
+						</td>
+						<td style="width: 17%; text-align: center">
+							<input id="{{ fields.case_reported }}" name="{{ fields.case_reported }}" type="checkbox" {% if form.case_reported %}checked{% endif %}>
+						</td>
+						<td style="width: 8%">
+							<span class="sombre-label">{{ labels.place_case_reported }}</span>
+						</td>
+						<td style="width: 17%">
+							<input id="{{ fields.place_case_reported }}" name="{{ fields.place_case_reported }}" type="text" class="input-medium" value="{{ form.place_case_reported }}" placeholder="{{ labels.place_case_reported }}">
+						</td>
+						<td style="width: 8%">
+							<span class="sombre-label">{{ labels.crno }}</span>
+						</td>
+						<td>
+							<input id="{{ fields.crno }}" name="{{ fields.crno }}" type="text" class="input-medium" value="{{ form.crno }}" placeholder="{{ labels.crno }}">
+						</td>
+					</tr>
+					<tr>
+						<td><span class="sombre-label">{{ labels.death_date }}</span></td>
+						<td>
+							<input id="{{ fields.death_date }}" name="{{ fields.death_date }}" type="text" class="input-small" value="{{ form.death_date }}" placeholder="{{ labels.death_date }}">
+						</td>
+						<td><span class="sombre-label">{{ labels.last_seen }}</span></td>
+						<td>
+							<input id="{{ fields.last_seen }}" name="{{ fields.last_seen }}" type="text" class="input-small" value="{{ form.last_seen }}" placeholder="{{ labels.last_seen }}">
+						</td>
+						<td><span class="sombre-label">{{ labels.death_cert_issued }}</span></td>
+						<td style="text-align: center">
+							<input id="{{ fields.death_cert_issued }}" name="{{ fields.death_cert_issued }}" type="checkbox" {% if form.death_cert_issued %}checked{% endif %}>
+						</td>
+						<td><span class="sombre-label">{{ labels.post_mortem_done }}</span></td>
+						<td style="text-align: center">
+							<input id="{{ fields.post_mortem_done }}" name="{{ fields.post_mortem_done }}" type="checkbox" {% if form.post_mortem_done %}checked{% endif %}>
+						</td>
+					</tr>
+				</table>
+				<div style="margin-top: 20px">
+					<div class="my-inline" style="width: 30%">
+						<span class="sombre-label">{{ labels.status_perpetrators }}</span><br>
+						<textarea id="{{ fields.status_perpetrators }}" name="{{ fields.status_perpetrators }}" class="input-xlarge" rows="6" placeholder="{{ labels.status_perpetrators }}">{{ form.status_perpetrators }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 30%">
+						<span class="sombre-label">{{ labels.death_missing_comments }}</span><br>
+						<textarea id="{{ fields.death_missing_comments }}" name="{{ fields.death_missing_comments }}" class="input-xlarge" rows="6" placeholder="{{ labels.death_missing_comments }}">{{ form.death_missing_comments }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 38%; padding-top: 20px">
+						<table class="table table-bordered">
+							<tr>
+								<td style="width: 25%">
+									<button id="btn-interviewer-acct" name="btn-interviewer-acct" type="button"><i class="icon-pencil"></i></button>
+									<button id="btn-rmv-interviewer-acct" name="btn-rmv-interviewer-acct" type="button" style="margin-left: 5px"><i class="icon-remove"></i></button>																			
+								</td>
+								<td style="width: 10%"><span class="field-label">{{ labels.interviewer_name }}</span></td>
+								<td><span id="{{ fields.interviewer_name }}">{{ form.interviewer_name }}</span></td>
+							</tr>
+						</table>
+					</div>					
+				</div>
+			</div>			
+			<div id="psychiatry">
+				<div>
+					<table class="table table-bordered" style="width: 97%">
+						<tr>
+                            <td style="width: 7%"><span class="field-label">{{ labels.psych_visit_type }}</span></td>
+                            <td style="width: 22%">
+                                <div class="form-inline">
+                                    <select id="{{ fields.psych_visit_type }}" name="{{ fields.psych_visit_type }}" class="input-small">
+                                        <option value="">N/A</option>
+                                        {% for v in basket.visit_type %}
+                                        <option value="{{ v }}" {% if v == form.psych_visit_type %}selected="selected"{% endif %}>{{ v }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input id="{{ fields.psych_correlate_entry_no }}" name="{{ fields.psych_correlate_entry_no }}" class="input-small" type="text" autocomplete="off" value="{{ form.psych_correlate_entry_no }}">
+                                </div>
+                            </td>
+							<td style="width: 10%"><span class="field-label">{{ labels.psych_session_type }}</span></td>
+							<td style="width: 19%">
+								<select id="{{ fields.psych_session_type }}" name="{{ fields.psych_session_type }}" class="input-medium">
+									<option value="">N/A</option>
+									{% for y in basket.session_types %}
+									<option value="{{ y }}" {% if form.psych_session_type == y %}selected{% endif %}>{{ y }}</option>
+									{% endfor %}							
+								</select>									
+							</td>
+							<td style="width: 9%"><span class="field-label">{{ labels.psych_acct }}</span></td>
+							<td style="width: 10%">
+								<div>
+									<button id="btn-psych-acct" name="btn-psych-acct" type="button"><i class="icon-pencil"></i></button>
+									<button id="btn-rmv-psych-acct" name="btn-rmv-psych-acct" type="button" style="margin-left: 5px"><i class="icon-remove"></i></button>										
+								</div>
+							</td>
+							<td><span id="{{ fields.psych_acct }}">{{ form.psych_acct }}</span></td>								
+						</tr>
+					</table>
+				</div>
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.psych_presentation }}</span><br>
+						<textarea id="{{ fields.psych_presentation }}" name="{{ fields.psych_presentation }}" class="input-xlarge" rows="8" placeholder="{{ labels.psych_presentation }}">{{ form.psych_presentation }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.psych_intervention }}</span><br>
+						<textarea id="{{ fields.psych_intervention }}" name="{{ fields.psych_intervention }}" class="input-xlarge" rows="8" placeholder="{{ labels.psych_intervention }}">{{ form.psych_intervention }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.psych_referral }}</span><br>
+						<textarea id="{{ fields.psych_referral }}" name="{{ fields.psych_referral }}" class="input-xlarge" rows="8" placeholder="{{ labels.psych_referral }}">{{ form.psych_referral }}</textarea>
+					</div>					
+				</div>
+			</div>			
+			<div id="counselling-1" class="hide-block">
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<table class="table table-bordered" style="width: 97%">
+                            <tr>
+                                <td style="width: 34%"><span class="field-label">{{ labels.counsel_visit_type }}</span></td>
+                                <td>
+                                    <div class="form-inline">
+                                        <select id="{{ fields.counsel_visit_type }}" name="{{ fields.counsel_visit_type }}" class="input-small">
+                                            <option value="">N/A</option>
+                                            {% for v in basket.visit_type %}
+                                            <option value="{{ v }}" {% if v == form.counsel_visit_type %}selected="selected"{% endif %}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <input id="{{ fields.counsel_correlate_entry_no }}" name="{{ fields.counsel_correlate_entry_no }}" class="input-small" type="text" autocomplete="off" value="{{ form.counsel_correlate_entry_no }}">
+                                    </div>
+                                </td>
+                            </tr>
+							<tr>
+								<td>
+                                    <div style="padding-bottom: 7px">
+                                        <span class="field-label">{{ labels.counsel_session_type }}</span>
+                                    </div>
+                                    <div>
+                                        {% for x, y in basket.counsel_session_types|slice:":3" %}
+                                            <label class="checkbox">
+                                                <input name="counsel_session_type_list" type="checkbox" value="{{ x }}" {% if y %}checked{% endif %}>&nbsp;{{ x }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+								<td>
+                                    {% for x, y in basket.counsel_session_types|slice:"3:" %}
+                                        <label class="checkbox">
+                                            <input name="counsel_session_type_list" type="checkbox" value="{{ x }}" {% if y %}checked{% endif %}>&nbsp;{{ x }}
+                                        </label>
+                                    {% endfor %}
+								</td>
+							</tr>
+						</table>
+					</div>
+					<div class="my-inline" style="width: 32%">
+                        <table class="table table-bordered" style="width: 97%">
+							<tr>
+								<td style="width: 35%">
+									<div><span class="field-label">{{ labels.counsellor_acct }}</span></div>
+									<div>
+										<button id="btn-counsellor" name="btn-counsellor" type="button"><i class="icon-pencil"></i></button>
+										<button id="btn-rmv-counsellor" name="btn-rmv-counsellor" type="button" style="margin-left: 5px"><i class="icon-remove"></i></button>
+									</div>
+								</td>
+								<td><span id="counsellor-name">{{ form.counsellor_acct }}</span></td>
+							</tr>
+                        </table>
+	                    <span class="field-label">{{ labels.med_psychiatry_hist }}</span><br>
+	                    <textarea id="{{ fields.med_psychiatry_hist }}" name="{{ fields.med_psychiatry_hist }}" class="input-xlarge" rows="5" placeholder="{{ labels.med_psychiatry_hist }}">{{ form.med_psychiatry_hist }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.previous_contact }}</span><br>
+						<textarea id="{{ fields.previous_contact }}" name="{{ fields.previous_contact }}" class="input-xlarge" rows="5">{{ form.previous_contact }}</textarea>
+					</div>
+				</div>
+				<div class="space-items-counselling">
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.suicidal_risk }}</span><br>
+						<textarea id="{{ fields.suicidal_risk }}" name="{{ fields.suicidal_risk }}" class="input-xlarge" rows="5" placeholder="{{ labels.suicidal_risk }}">{{ form.suicidal_risk }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.substance_abuse }}</span><br>
+						<textarea id="{{ fields.substance_abuse }}" name="{{ fields.substance_abuse }}" class="input-xlarge" rows="5" placeholder="{{ labels.substance_abuse }}">{{ form.substance_abuse }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.counsel_feedback }}</span><br>
+						<textarea id="{{ fields.counsel_feedback }}" name="{{ fields.counsel_feedback }}" class="input-xlarge" rows="5">{{ form.counsel_feedback }}</textarea>
+					</div>
+				</div>
+				<div class="space-items-counselling">
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.prob_complaints }}</span><br>
+						<textarea id="{{ fields.prob_complaints }}" name="{{ fields.prob_complaints }}" class="input-xlarge" rows="5" placeholder="{{ labels.prob_complaints }}">{{ form.prob_complaints }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.present_mental_state }}</span><br>
+						<textarea id="{{ fields.present_mental_state }}" name="{{ fields.present_mental_state }}" class="input-xlarge" rows="5" placeholder="{{ labels.present_mental_state }}">{{ form.present_mental_state }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.counsel_impressions }}</span><br>
+						<textarea id="{{ fields.counsel_impressions }}" name="{{ fields.counsel_impressions }}" class="input-xlarge" rows="5">{{ form.counsel_impressions }}</textarea>
+					</div>
+				</div>
+				<div class="space-items-counselling">
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.hist_prob_complaints }}</span><br>
+						<textarea id="{{ fields.hist_prob_complaints }}" name="{{ fields.hist_prob_complaints }}" class="input-xlarge" rows="5" placeholder="{{ labels.hist_prob_complaints }}">{{ form.hist_prob_complaints }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.prob_formulation }}</span><br>
+						<textarea id="{{ fields.prob_formulation }}" name="{{ fields.prob_formulation }}" class="input-xlarge" rows="5" placeholder="{{ labels.prob_formulation }}">{{ form.prob_formulation }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.management_plan }}</span><br>
+						<textarea id="{{ fields.management_plan }}" name="{{ fields.management_plan }}" class="input-xlarge" rows="5">{{ form.management_plan }}</textarea>
+					</div>
+				</div>
+				<div class="space-items-counselling">
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.counsel_expectations }}</span><br>
+						<textarea id="{{ fields.counsel_expectations }}" name="{{ fields.counsel_expectations }}" class="input-xlarge" rows="5" placeholder="{{ labels.counsel_expectations }}">{{ form.counsel_expectations }}</textarea>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.counsel_management }}</span><br>
+						<textarea id="{{ fields.counsel_management }}" name="{{ fields.counsel_management }}" class="input-xlarge" rows="5" placeholder="{{ labels.counsel_management }}">{{ form.counsel_management }}</textarea>
+					</div>
+                    <div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.counsel_trauma_effects }}</span><br>
+						<textarea id="{{ fields.counsel_trauma_effects }}" name="{{ fields.counsel_trauma_effects }}" class="input-xlarge" rows="5" placeholder="{{ labels.counsel_trauma_effects }}">{{ form.counsel_trauma_effects }}</textarea>
+                    </div>
+				</div>
+				<div class="space-items-counselling">
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.counsel_diagnosis}}</span><br>
+						<textarea id="{{ fields.counsel_diagnosis }}" name="{{ fields.counsel_diagnosis }}" class="input-xlarge" rows="5" placeholder="{{ labels.counsel_diagnosis }}">{{ form.counsel_diagnosis }}</textarea>
+					</div>
+                    <div class="my-inline" style="width: 32%"></div>
+                    <div class="my-inline" style="width: 32%"></div>
+				</div>
+			</div>
+			<div id="counselling-2">
+				<div>
+					<div class="my-inline" style="width: 39%">
+						<div><span class="field-label"><strong>Shona Symptom Questionnaire (SSQ-14)</strong></span></div>
+						<ul id="shona-symptom-q-con" class="an-input-list">
+							{% for rw in basket.srq_counsel %}
+							<li>
+								<label class="checkbox">
+									<input id="{{ rw.ukey }}" name="{{ rw.ukey }}" type="checkbox" {% if rw.active %}checked{% endif %}>{{ rw.type_health_state }}
+								</label>
+							</li>
+							{% endfor %}
+							<li>
+								<input id="{{ fields.con_score_symptom }}" name="{{ fields.con_score_symptom }}" type="text" class="input-mini" value="{{ form.con_score_symptom }}">&nbsp;
+								<strong>{{ labels.con_score_symptom }}</strong>
+							</li>
+						</ul>
+						<div style="margin: 15px 0 0 0"><span class="field-label"><strong>Quality of Life</strong></span></div>
+						<table id="quality-life-counsel" class="block-max-width a-table">
+							{% for i in basket.quality_life_counsel %}
+							<tr>
+								<td style="width: 23%">
+									<select id="{{ i.ukey }}" name="{{ i.ukey }}" class="input-small qlife">
+										<option value="{{ dictionary.idefault_option }}">-- N/A --</option>
+										{% for a, b in i.dropitems %}
+										<option value="{{ a }}" {% if i.item_val == a %}selected{% endif %}>{{ b }}</option>
+										{% endfor %}
+									</select>							
+								</td>
+								<td>{{ i.type_health_state }}</td>
+							</tr>
+							{% endfor %}
+							<tr>
+								<td><input id="{{ fields.con_score_quality }}" name="{{ fields.con_score_quality }}" type="text" class="input-mini" value="{{ form.con_score_quality }}"></td>
+								<td><strong>{{ labels.con_score_quality }}</strong></td>
+							</tr>
+						</table>									
+					</div>
+					<div class="my-inline" style="width: 29%">
+						<div><span class="field-label"><strong>Sleep Scores</strong></span></div>
+						<table id="sleep-counsel" class="block-max-width a-table">
+							{% for rw in basket.sleep_counsel %}
+							<tr>
+								<td style="width: 25%">
+									<select id="{{ rw.ukey }}" name="{{ rw.ukey }}" class="input-small">
+										<option value="{{ dictionary.idefault_option }}">-- N/A --</option>
+										{% for x, y in basket.health_state_scoring %}
+										<option value="{{ x }}" {% if rw.item_val == x %}selected{% endif %}>{{ y }}</option>
+										{% endfor %}
+									</select>									
+								</td>
+								<td>{{ rw.type_health_state }}</td>
+							</tr>
+							{% endfor %}
+							<tr>
+								<td><input id="{{ fields.con_score_sleep }}" name="{{ fields.con_score_sleep }}" type="text" class="input-mini" value="{{ form.con_score_sleep }}"></td>
+								<td><strong>{{ labels.con_score_sleep }}</strong></td>
+							</tr>
+						</table>						
+					</div>
+					<div class="my-inline" style="width: 28%">
+						<div><span class="field-label"><strong>Physical Scores</strong></span></div>						
+						<table id="physical-counsel" class="block-max-width a-table">
+							{% for rw in basket.physical_counsel %}
+							<tr>
+								<td style="width: 28%">
+									<select id="{{ rw.ukey }}" name="{{ rw.ukey }}" class="input-small">
+										<option value="{{ dictionary.idefault_option }}">-- N/A --</option>
+										{% for x, y in basket.health_state_scoring %}
+										<option value="{{ x }}" {% if rw.item_val == x %}selected{% endif %}>{{ y }}</option>
+										{% endfor %}
+									</select>										
+								</td>
+								<td>{{ rw.type_health_state }}</td>
+							</tr>
+							{% endfor %}
+							<tr>
+								<td><input id="{{ fields.con_score_physical }}" name="{{ fields.con_score_physical }}" type="text" class="input-mini" value="{{ form.con_score_physical }}"></td>
+								<td><strong>{{ labels.con_score_physical }}</strong></td>
+							</tr>
+						</table>						
+					</div>					
+				</div>
+				<div>
+					<div class="my-inline" style="width: 49%">
+						
+					</div>
+					<div class="my-inline" style="width: 49%">
+						<div><span class="field-label"><strong>Summary Scores</strong></span></div>
+						<table id="table-summary-scores" class="table table-bordered">
+							<tr>
+								<td style="width: 65%"><strong>{{ labels.con_score_symptom }}</strong></td>
+								<td><span id="calc_con_score_symptom" class="highlight-bold">{{ form.con_score_symptom }}</span></td>
+							</tr>
+							<tr>
+								<td><strong>{{ labels.con_score_physical }}</strong></td>
+								<td><span id="calc_con_score_physical" class="highlight-bold">{{ form.con_score_physical }}</span></td>
+							</tr>
+							<tr>
+								<td><strong>{{ labels.con_score_sleep }}</strong></td>
+								<td><span id="calc_con_score_sleep" class="highlight-bold">{{ form.con_score_sleep }}</span></td>
+							</tr>
+							<tr>
+								<td><strong>{{ labels.con_score_quality }}</strong></td>
+								<td><span id="calc_con_score_quality" class="highlight-bold">{{ form.con_score_quality }}</span></td>
+							</tr>
+						</table>						
+					</div>
+				</div>
+			</div>
+			<div id="med-assessment-1">
+				<div>
+					<table class="table table-bordered">
+						<tr>
+                            <td style="width: 7%">
+                                <span class="field-label">{{ labels.med_assess_visit_type }}</span>
+                            </td>
+                            <td style="width: 22%">
+                                <div class="form-inline">
+                                    <select id="{{ fields.med_assess_visit_type }}" name="{{ fields.med_assess_visit_type }}" class="input-small">
+                                        <option value="">N/A</option>
+                                        {% for v in basket.visit_type %}
+                                        <option value="{{ v }}" {% if v == form.med_assess_visit_type %}selected="selected"{% endif %}>{{ v }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input id="{{ fields.med_assess_correlate_entry_no }}" name="{{ fields.med_assess_correlate_entry_no }}" class="input-small" type="text" autocomplete="off" value="{{ form.med_assess_correlate_entry_no }}">
+                                </div>
+                            </td>
+							<td style="width: 10%">
+								<button id="btn-med-assessor" name="btn-med-assessor" type="button"><i class="icon-pencil"></i></button>						
+								<button id="btn-rmv-med-assessor" name="btn-rmv-med-assessor" type="button"><i class="icon-remove"></i></button>								
+							</td>
+							<td style="width: 20%"><span class="field-label" style="margin-left: 10px">{{ labels.med_assessor_acct }}</span></td>
+							<td><span id="med-assessor-acct">{{ form.med_assessor_acct }}</span></td>
+						</tr>
+					</table>			
+				</div>								
+				<div style="width: 100%">
+					<div class="my-inline" style="width: 32%">												
+						<div>
+							<span class="field-label">{{ labels.med_assess_appearance }}</span><br>
+							<textarea id="{{ fields.med_assess_appearance }}" name="{{ fields.med_assess_appearance }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_appearance }}">{{ form.med_assess_appearance }}</textarea>
+						</div>		
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_allergies }}</span><br>
+							<textarea id="{{ fields.med_assess_allergies }}" name="{{ fields.med_assess_allergies }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_allergies }}">{{ form.med_assess_allergies }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_head_neck }}</span><br>
+							<textarea id="{{ fields.med_assess_head_neck }}" name="{{ fields.med_assess_head_neck }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_head_neck }}">{{ form.med_assess_head_neck }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_chest }}</span><br>
+							<textarea id="{{ fields.med_assess_chest }}" name="{{ fields.med_assess_chest }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_chest }}">{{ form.med_assess_chest }}</textarea>
+						</div>	
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_abdomen_pelvis_genitourinary }}</span><br>
+							<textarea id="{{ fields.med_assess_abdomen_pelvis_genitourinary }}" name="{{ fields.med_assess_abdomen_pelvis_genitourinary }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_abdomen_pelvis_genitourinary }}">{{ form.med_assess_abdomen_pelvis_genitourinary }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_skin_musculoskeletal }}</span><br>
+							<textarea id="{{ fields.med_assess_skin_musculoskeletal }}" name="{{ fields.med_assess_skin_musculoskeletal }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_skin_musculoskeletal }}">{{ form.med_assess_skin_musculoskeletal }}</textarea>
+						</div>						
+					</div>					
+					<div class="my-inline" style="width: 32%">						
+						<div>
+							<span class="field-label">{{ labels.med_assess_mental_mood }}</span><br>
+							<textarea id="{{ fields.med_assess_mental_mood }}" name="{{ fields.med_assess_mental_mood }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_mental_mood }}">{{ form.med_assess_mental_mood }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_mental_perception }}</span><br>
+							<textarea id="{{ fields.med_assess_mental_perception }}" name="{{ fields.med_assess_mental_perception }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_mental_perception }}">{{ form.med_assess_mental_perception }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_mental_insight }}</span><br>
+							<textarea id="{{ fields.med_assess_mental_insight }}" name="{{ fields.med_assess_mental_insight }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_mental_insight }}">{{ form.med_assess_mental_insight }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_mental_behaviour }}</span><br>
+							<textarea id="{{ fields.med_assess_mental_behaviour }}" name="{{ fields.med_assess_mental_behaviour }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_mental_behaviour }}">{{ form.med_assess_mental_behaviour }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_mental_speech }}</span><br>
+							<textarea id="{{ fields.med_assess_mental_speech }}" name="{{ fields.med_assess_mental_speech }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_mental_speech }}">{{ form.med_assess_mental_speech }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_mental_cognition }}</span><br>
+							<textarea id="{{ fields.med_assess_mental_cognition }}" name="{{ fields.med_assess_mental_cognition }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_mental_cognition }}">{{ form.med_assess_mental_cognition }}</textarea>
+						</div>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<div>
+							<span class="field-label">{{ labels.med_assess_treat_investigate }}</span><br>
+							<textarea id="{{ fields.med_assess_treat_investigate }}" name="{{ fields.med_assess_treat_investigate }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_treat_investigate }}">{{ form.med_assess_treat_investigate }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_referral }}</span><br>
+							<textarea id="{{ fields.med_assess_referral }}" name="{{ fields.med_assess_referral }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_referral }}">{{ form.med_assess_referral }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_diagnosis }}</span><br>
+							<textarea id="{{ fields.med_assess_diagnosis }}" name="{{ fields.med_assess_diagnosis }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_diagnosis }}">{{ form.med_assess_diagnosis }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_medication }}</span><br>
+							<textarea id="{{ fields.med_assess_medication }}" name="{{ fields.med_assess_medication }}" rows="5" class="input-xlarge" placeholder="{{ labels.med_assess_medication }}">{{ form.med_assess_medication }}</textarea>
+						</div>
+						<div style="margin-top: 5px">
+							<span class="field-label">{{ labels.med_assess_remarks }}</span><br>
+							<textarea id="{{ fields.med_assess_remarks }}" name="{{ fields.med_assess_remarks }}" rows="14" class="input-xlarge" placeholder="{{ labels.med_assess_remarks }}">{{ form.med_assess_remarks }}</textarea>
+						</div>																								
+					</div>
+				</div>
+			</div>
+			<div id="med-assessment-2">
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<div><span class="field-label"><strong>Presentation (Physical Trauma)</strong></span></div>
+						<ul class="simple-vertical">
+							{% for y in basket.trauma_presentation %}
+							<li>
+								<label class="checkbox">
+									<input id="{{ y.ukey }}" name="{{ y.ukey }}" type="checkbox" style="margin-right: 5px;" {% if y.active %}checked{% endif %}>{{ y.type_health_state }}
+								</label>
+							</li>
+							{% endfor %}
+						</ul>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<div><span class="field-label"><strong>Site of Injury (Physical Trauma)</strong></span></div>
+						<ul class="simple-vertical">
+							{% for x in basket.site_injury_medassessment %}
+							<li>
+								<label class="checkbox">
+									<input id="{{ x.ukey }}" name="{{ x.ukey }}" type="checkbox" style="margin-right: 5px" {% if x.active %}checked{% endif %}>{{ x.type_health_state }}
+								</label>
+							</li>
+							{% endfor %}
+						</ul>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<div><span class="field-label"><strong>Time of Reporting</strong></span></div>
+						<ul id="reporting-time" class="simple-vertical">
+							<li>								
+								<input name="{{ fields.med_reporting_time }}" type="radio" style="margin-right: 5px" value="{{ dictionary.idefault_option }}">N/A								
+							</li>
+							{% for c in basket.reporting_time %}
+							<li>							
+								<input name="{{ fields.med_reporting_time }}" type="radio" style="margin-right: 5px" value="{{ c.id }}" {% if c.id == form.med_reporting_time %}checked{% endif %}>{{ c.type_health_state }}
+							</li>
+							{% endfor %}
+						</ul>	
+						<div style="margin-top: 20px"><span class="field-label"><strong>Doctor's opinion on injury</strong></span></div>						
+						<ul class="simple-vertical">
+							{% for g in basket.opinion_degree_force %}
+							<li style="padding: 0 0 10px 0">
+								<select id="{{ g.ukey }}" name="{{ g.ukey }}" class="input-small" style="margin-right: 5px">
+									<option value="{{ dictionary.idefault_option }}">N/A</option>
+									{% for k, v in g.option_list %}
+									<option value="{{ k }}" {% if g.item_val == k %}selected{% endif %}>{{ v }}</option>
+									{% endfor %}
+								</select>{{ g.option_text }}
+							</li>
+							{% endfor %}
+						</ul>
+					</div>
+				</div>				
+			</div>
+			<div id="physiotherapy">
+				<div>
+					<table class="table table-bordered">
+						<tr>
+                            <td style="width: 7%"><span class="field-label">{{ labels.physio_visit_type }}</span></td>
+                            <td style="width: 22%">
+                                <div class="form-inline">
+                                    <select id="{{ fields.physio_visit_type }}" name="{{ fields.physio_visit_type }}" class="input-small">
+                                        <option value="">N/A</option>
+                                        {% for v in basket.visit_type %}
+                                        <option value="{{ v }}" {% if v == form.physio_visit_type %}selected="selected"{% endif %}>{{ v }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input id="{{ fields.physio_correlate_entry_no }}" name="{{ fields.physio_correlate_entry_no }}" class="input-small" type="text" autocomplete="off" value="{{ form.physio_correlate_entry_no }}">
+                                </div>
+                            </td>
+							<td style="width: 8%"><span class="field-label">{{ labels.physio_session_type }}</span></td>
+							<td style="width: 18%">
+								<select id="{{ fields.physio_session_type }}" name="{{ fields.physio_session_type }}" class="input-medium">
+									<option value="">N/A</option>
+									{% for y in basket.session_types %}
+									<option value="{{ y }}" {% if form.physio_session_type == y %}selected{% endif %}>{{ y }}</option>
+									{% endfor %}
+								</select>
+							</td>						
+							<td style="width: 10%">
+								<button id="btn-physiotherapist" name="btn-physiotherapist" type="button" style="margin-right: 5px">...</button>
+								<button id="btn-rmv-physiotherapist" name="btn-rmv-physiotherapist" type="button"><i class="icon-remove"></i></button>								
+							</td>
+							<td style="width: 10%"><span class="field-label" style="margin-right: 10px">{{ labels.physiotherapist_acct }}</span></td>
+							<td><span id="physiotherapist-name">{{ form.physiotherapist_acct }}</span></td>
+						</tr>
+					</table>
+				</div>					
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.physio_presentation }}</span><br>
+						<textarea id="{{ fields.physio_presentation }}" name="{{ fields.physio_presentation }}" class="input-xlarge" rows="8" placeholder="{{ labels.physio_presentation }}">{{ form.physio_presentation }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.physio_intervention }}</span><br>
+						<textarea id="{{ fields.physio_intervention }}" name="{{ fields.physio_intervention }}" class="input-xlarge" rows="8" placeholder="{{ labels.physio_intervention }}">{{ form.physio_intervention }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.physio_referral }}</span><br>
+						<textarea id="{{ fields.physio_referral }}" name="{{ fields.physio_referral }}" class="input-xlarge" rows="8" placeholder="{{ labels.physio_referral }}">{{ form.physio_referral }}</textarea>
+					</div>
+				</div>				
+			</div>
+			<div id="occupational-therapy">
+				<div>
+					<table class="table table-bordered">
+						<tr>
+                            <td style="width: 7%"><span class="field-label">{{ labels.occup_visit_type }}</span></td>
+                            <td style="width: 22%">
+                                <div class="form-inline">
+                                    <select id="{{ fields.occup_visit_type }}" name="{{ fields.occup_visit_type }}" class="input-small">
+                                        <option value="">N/A</option>
+                                        {% for v in basket.visit_type %}
+                                        <option value="{{ v }}" {% if v == form.occup_visit_type %}selected="selected"{% endif %}>{{ v }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input id="{{ fields.occup_correlate_entry_no }}" name="{{ fields.occup_correlate_entry_no }}" class="input-small" type="text" autocomplete="off" value="{{ form.occup_correlate_entry_no }}">
+                                </div>
+                            </td>
+							<td style="width: 9%"><span class="field-label">{{ labels.occup_session_type }}</span></td>
+							<td style="width: 17%">
+								<select id="{{ fields.occup_session_type }}" name="{{ fields.occup_session_type }}" class="input-medium">
+									<option value="">N/A</option>
+									{% for y in basket.session_types %}
+									<option value="{{ y }}" {% if form.occup_session_type == y %}selected{% endif %}>{{ y }}</option>
+									{% endfor %}
+								</select>
+							</td>
+							<td style="width: 10%">
+								<button id="btn-occu-therapist" name="btn-occu-therapist" type="button" style="margin-right: 5px">...</button>
+								<button id="btn-rmv-occu-therapist" name="btn-rmv-occu-therapist" type="button"><i class="icon-remove"></i></button>								
+							</td>
+							<td style="width: 14%"><span class="field-label" style="margin-right: 10px">{{ labels.occupational_therapist_acct }}</span></td>
+							<td><span id="occu-therapist-name">{{ form.occupational_therapist_acct }}</span></td>
+						</tr>
+					</table>
+				</div>
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.occup_presentation }}</span><br>
+						<textarea id="{{ fields.occup_presentation }}" name="{{ fields.occup_presentation }}" class="input-xlarge" rows="8" placeholder="{{ labels.occup_presentation }}">{{ form.occup_presentation }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.occup_intervention }}</span><br>
+						<textarea id="{{ fields.occup_intervention }}" name="{{ fields.occup_intervention }}" class="input-xlarge" rows="8" placeholder="{{ labels.occup_intervention }}">{{ form.occup_intervention }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.occup_referral }}</span><br>
+						<textarea id="{{ fields.occup_referral }}" name="{{ fields.occup_referral }}" class="input-xlarge" rows="8" placeholder="{{ labels.occup_referral }}">{{ form.occup_referral }}</textarea>
+					</div>
+				</div>				
+			</div>
+			<div id="legal-issues">
+				<div>
+					<div class="my-inline" style="width: 32%">
+                        <div>
+                            <table class="table table-bordered" style="width: 90%">
+                                <tr>
+                                    <td><span class="field-label">{{ labels.legal_visit_type }}</span></td>
+                                    <td>
+                                        <div class="form-inline">
+                                            <select id="{{ fields.legal_visit_type }}" name="{{ fields.legal_visit_type }}" class="input-small">
+                                                <option value="">N/A</option>
+                                                {% for v in basket.visit_type %}
+                                                <option value="{{ v }}" {% if v == form.legal_visit_type %}selected="selected"{% endif %}>{{ v }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <input id="{{ fields.legal_correlate_entry_no }}" name="{{ fields.legal_correlate_entry_no }}" class="input-small" type="text" autocomplete="off" value="{{ form.legal_correlate_entry_no }}">
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+						<div style="margin-top: 10px">
+							<span class="field-label">{{ labels.legal_place }}</span><br>
+							<input id="{{ fields.legal_place }}" name="{{ fields.legal_place }}" class="input-xlarge" type="text" value="{{ form.legal_place }}" placeholder="{{ labels.legal_place }}">							
+						</div>
+						<div style="margin-top: 20px">
+							<table class="table table-bordered" style="width: 90%">
+								<tr>
+									<td style="width: 26%">								
+										<button id="btn-legal-aid" name="btn-legal-aid" type="button">...</button>
+										<button id="btn-rmv-legal-aid" name="btn-rmv-legal-aid" type="button"><i class="icon-remove"></i></button>									
+									</td>
+									<td><span class="field-label">{{ labels.legal_aid_acct_id }}</span></td>
+								</tr>
+								<tr>
+									<td></td>
+									<td><span id="legal-aid-acct">{{ form.legal_aid_acct }}</span></td>
+								</tr>
+							</table>							
+						</div>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<div>
+							<span class="field-label">{{ labels.latest_orders }}</span><br>
+							<textarea id="{{ fields.latest_orders }}" name="{{ fields.latest_orders }}" class="input-xlarge" rows="5" placeholder="{{ labels.latest_orders }}">{{ form.latest_orders }}</textarea>							
+						</div>
+						<div style="margin-top: 10px">
+							<label class="checkbox">
+								<input id="{{ fields.legal_action }}" name="{{ fields.legal_action }}" type="checkbox" style="margin-right: 6px" {% if form.legal_action %}checked{% endif %}>{{ labels.legal_action }}
+							</label>							
+						</div>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<div>
+							<span class="field-label">{{ labels.legal_summons }}</span><br>
+							<input id="{{ fields.legal_summons }}" name="{{ fields.legal_summons }}" class="input-xlarge" type="text" value="{{ form.legal_summons }}" placeholder="{{ labels.legal_summons }}">							
+						</div>
+						<div>
+							<span class="field-label">{{ labels.trial_stage }}</span><br>
+							<input id="{{ fields.trial_stage }}" name="{{ fields.trial_stage }}" class="input-xlarge" type="text" value="{{ form.trial_stage }}" placeholder="{{ labels.trial_stage }}">													
+						</div>
+						<div>
+							<span class="field-label">{{ labels.trial_date }}</span><br>
+							<input id="{{ fields.trial_date }}" name="{{ fields.trial_date }}" class="input-medium" type="text" value="{{ form.trial_date }}" placeholder="{{ labels.trial_date }}">							
+						</div>
+					</div>
+				</div>
+				<div class="a-line" style="margin: 10px 0"></div>
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<div>
+							<span class="field-label">{{ labels.legal_session_type }}</span><br>
+							<select id="legal_session_type" name="legal_session_type" class="input-medium">
+								<option value="">-- N/A --</option>
+								{% for c in basket.session_types %}
+								<option value="{{ c }}" {% if form.legal_session_type == c %}selected{% endif %}>{{ c }}</option>
+								{% endfor %}
+							</select>							
+						</div>
+						<div style="margin-top: 25px">
+							<table class="table table-bordered" style="width: 90%">
+								<tr>
+									<td style="width: 26%">								
+										<button id="btn-legal-rep-acct" name="btn-legal-rep-acct" type="button">...</button>
+										<button id="btn-rmv-legal-rep-acct" name="btn-rmv-legal-rep-acct" type="button"><i class="icon-remove"></i></button>									
+									</td>
+									<td>
+										<span class="field-label">{{ labels.legal_rep_acct_id }}</span>								
+									</td>
+								</tr>
+								<tr>
+									<td></td>
+									<td><span id="legal-rep-acct">{{ form.legal_rep_acct }}</span></td>
+								</tr>
+							</table>							
+						</div>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<div>
+							<span class="field-label">{{ labels.action_date }}</span><br>
+							<input id="{{ fields.action_date }}" name="{{ fields.action_date }}" class="input-medium" type="text" value="{{ form.action_date }}" class="input-xlarge" placeholder="{{ labels.action_date }}">														
+						</div>
+						<div>
+							<ul class="simple-vertical">
+								<li>
+									<label class="checkbox">
+										<input id="{{ fields.legal_criminal }}" name="{{ fields.legal_criminal }}" type="checkbox" style="margin-right: 5px" {% if form.legal_criminal %}checked{% endif %}>{{ labels.legal_criminal }}
+									</label>
+								</li>
+								<li>
+									<label class="checkbox">
+										<input id="{{ fields.legal_civil }}" name="{{ fields.legal_civil }}" type="checkbox" style="margin-right: 5px" {% if form.legal_civil %}checked{% endif %}>{{ labels.legal_civil }}
+									</label>									
+								</li>							
+								<li>
+									<label class="checkbox">
+										<input id="{{ fields.transitional_justice_program }}" name="{{ fields.transitional_justice_program }}" type="checkbox" style="margin-right: 5px" {% if form.transitional_justice_program %}checked{% endif %}>{{ labels.transitional_justice_program }}
+									</label>									
+								</li>
+							</ul>							
+						</div>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.final_outcome }}</span><br>
+						<textarea id="{{ fields.final_outcome }}" name="{{ fields.final_outcome }}" rows="4" class="input-xlarge" placeholder="{{ labels.final_outcome }}">{{ form.final_outcome }}</textarea>
+                        <div style="margin-top: 10px">
+                            <label class="checkbox">
+                                <input id="{{ fields.legal_case_outcome }}" name="{{ fields.legal_case_outcome }}" type="checkbox" style="margin-right: 6px" {% if form.legal_case_outcome %}checked{% endif %}>
+                                {{ labels.legal_case_outcome }}
+                            </label>
+                        </div>
+					</div>
+				</div>			
+				<div class="a-line" style="margin: 10px 0"></div>
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.legal_presentation }}</span><br>
+						<textarea id="{{ fields.legal_presentation }}" name="{{ fields.legal_presentation }}" class="input-xlarge" rows="4" placeholder="{{ labels.legal_presentation }}">{{ form.legal_presentation }}</textarea>													
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.legal_follow_up }}</span><br>
+						<textarea id="{{ fields.legal_follow_up }}" name="{{ fields.legal_follow_up }}" rows="4" class="input-xlarge" placeholder="{{ labels.legal_follow_up }}">{{ form.legal_follow_up }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.legal_comments }}</span><br>
+						<textarea id="{{ fields.legal_comments }}" name="{{ fields.legal_comments }}" rows="4" class="input-xlarge" placeholder="{{ labels.legal_comments }}">{{ form.legal_comments }}</textarea>						
+					</div>
+				</div>
+				<div class="a-line" style="margin: 20px 0 10px 0"></div>
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.legal_intervention }}</span><br>
+						<textarea id="{{ fields.legal_intervention }}" name="{{ fields.legal_intervention }}" class="input-xlarge" rows="4" placeholder="{{ labels.legal_intervention }}">{{ form.legal_intervention }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<div>
+							<span class="field-label">{{ labels.police_report_no }}</span><br>
+							<input id="{{ fields.police_report_no }}" name="{{ fields.police_report_no }}" class="input-xlarge" type="text" value="{{ form.police_report_no }}" placeholder="{{ labels.police_report_no }}">														
+						</div>
+						<div>
+							<span class="field-label">{{ labels.court_process }}</span><br>
+							<textarea id="{{ fields.court_process }}" name="{{ fields.court_process }}" rows="4" class="input-xlarge" placeholder="{{ labels.court_process }}">{{ form.court_process }}</textarea>														
+						</div>
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.legal_referral }}</span><br>
+						<textarea id="{{ fields.legal_referral }}" name="{{ fields.legal_referral }}" class="input-xlarge" rows="4" placeholder="{{ labels.legal_referral }}">{{ form.legal_referral }}</textarea>												
+					</div>
+				</div>																	
+			</div>
+			<div id="hospitalization">	
+				<div>
+					<table class="table table-bordered">
+						<tr>
+							<td style="width: 7%">
+                                <span class="field-label">{{ labels.hosp_visit_type }}</span>
+                            </td>
+							<td style="width: 22%">
+                                <div class="form-inline">
+                                    <select id="{{ fields.hosp_visit_type }}" name="{{ fields.hosp_visit_type }}" class="input-small">
+                                        <option value="">N/A</option>
+                                        {% for v in basket.visit_type %}
+                                        <option value="{{ v }}" {% if v == form.hosp_visit_type %}selected="selected"{% endif %}>{{ v }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input id="{{ fields.hosp_correlate_entry_no }}" name="{{ fields.hosp_correlate_entry_no }}" class="input-small" type="text" autocomplete="off" value="{{ form.hosp_correlate_entry_no }}">
+                                </div>
+                            </td>
+							<td style="width: 9%">
+								<button id="btn-hospital" name="btn-hospital" type="button">...</button>
+								<button id="btn-rmv-hospital" name="btn-rmv-hospital" type="button"><i class="icon-remove"></i></button>
+							</td>
+							<td style="width: 9%">
+								<span class="field-label">{{ labels.hospital_acct_id }}</span>
+							</td>
+							<td><span id="hospital-acct">{{ form.hospital_acct }}</span></td>
+							<td style="width: 9%">
+								<button id="btn-doctor-acct" name="btn-doctor-acct" type="button">...</button>
+								<button id="btn-rmv-doctor-acct" name="btn-rmv-doctor-acct" type="button"><i class="icon-remove"></i></button>								
+							</td>
+							<td style="width: 9%"><span class="field-label">{{ labels.attending_dr_acct_id }}</span></td>
+							<td style="width: 15%"><span id="attending-dr-acct">{{ form.attending_dr_acct }}</span></td>
+						</tr>
+						<tr>
+                            <td></td>
+                            <td></td>
+							<td>
+								<button id="btn-doctor2-acct" name="btn-doctor2-acct" type="button">...</button>
+								<button id="btn-rmv-doctor2-acct" name="btn-rmv-doctor2-acct" type="button"><i class="icon-remove"></i></button>
+							</td>
+							<td><span class="field-label" style="margin-right: 10px">{{ labels.attending_dr2_acct_id }}</span></td>
+							<td><span id="attending-dr2-acct">{{ form.attending_dr2_acct }}</span></td>
+							<td>
+								<button id="btn-hosp-clinician-acct" name="btn-hosp-clinician-acct" type="button">...</button>
+								<button id="btn-rmv-hosp-clinician-acct" name="btn-rmv-hosp-clinician-acct" type="button"><i class="icon-remove"></i></button>
+							</td>
+							<td><span class="field-label">{{ labels.hosp_clinician_acct_id }}</span></td>
+							<td><span id="hosp-clinician-acct">{{ form.hosp_clinician_acct }}</span></td>
+						</tr>
+					</table>
+				</div>				
+				<div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.hosp_condition }}</span><br>
+						<textarea id="{{ fields.hosp_condition }}" name="{{ fields.hosp_condition }}" class="input-xlarge" rows="8" placeholder="{{ labels.hosp_condition }}">{{ form.hosp_condition }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.hosp_diagnosis }}</span><br>
+						<textarea id="{{ fields.hosp_diagnosis }}" name="{{ fields.hosp_diagnosis }}" class="input-xlarge" rows="8" placeholder="{{ labels.hosp_diagnosis }}">{{ form.hosp_diagnosis }}</textarea>						
+					</div>
+					<div class="my-inline" style="width: 32%">
+						<span class="field-label">{{ labels.hosp_orders }}</span><br>
+						<textarea id="{{ fields.hosp_orders }}" name="{{ fields.hosp_orders }}" class="input-xlarge" rows="8" placeholder="{{ labels.hosp_orders }}">{{ form.hosp_orders }}</textarea>						
+					</div>
+				</div>				
+				<table class="table table-bordered table-condensed" style="margin-top: 25px">					
+					<tr>
+						<td style="width: 8%"><span class="field-label">{{ labels.admitted_on }}</span></td>
+						<td>
+							<input id="{{ fields.admitted_on }}" name="{{ fields.admitted_on }}" type="text" class="input-medium" value="{{ form.admitted_on }}" placeholder="{{ labels.admitted_on }}">
+						</td>						
+					</tr>
+					<tr>
+						<td><span class="field-label">{{ labels.discharged_on }}</span></td>
+						<td>
+							<input id="{{ fields.discharged_on }}" name="{{ fields.discharged_on }}" type="text" class="input-medium" value="{{ form.discharged_on }}" placeholder="{{ labels.discharged_on }}">
+						</td>						
+					</tr>
+					<tr>
+						<td><span class="field-label">Days Hospitalised</span></td>
+						<td><strong id="days_hospitalised" style="color: #FF0000">{{ form.days_hospitalised }}</strong></td>
+					</tr>
+				</table>
+			</div>			
+			<div id="acct-files" style="margin: 25px 0 0 0">
+				<table id="file-uploads" class="table table-bordered">
+					<tr>
+						<th style="width: 25%">
+							Scans and X-rays<br>
+							File name
+						</th>
+						<th>Path</th>						
+					</tr>
+				</table>
+				<div class="pagination"><ul id="browse-file-uploads"></ul></div>
+			</div>
+			<div class="block-max-width">
+				<table id="browse-entries" class="table table-bordered">
+					<tr>
+						<th style="width: 12%">
+							RECENT ENTRIES<br>
+							Entry No.
+						</th>
+						<th>Date</th>
+						<th>Ref. No.</th>
+						<th>Account</th>
+						<th>CSU No.</th>
+						<th>Address</th>
+						<th>National ID</th>
+					</tr>
+				</table>
+				<div class="pagination" style="width: 100%; text-align: center"><ul id="browse-entry-pages"></ul></div>
+			</div>
+		</div>
+	</div>
+	<div style="display: none">
+		<input id="{{ fields.cnlcn_acct_id }}" name="{{ fields.cnlcn_acct_id }}" type="hidden" value="{{ form.cnlcn_acct_id }}">
+		<input id="{{ fields.acct_id }}" name="{{ fields.acct_id }}" type="hidden" value="{{ form.acct_id }}">		
+		<input id="{{ fields.hospital_acct_id }}" name="{{ fields.hospital_acct_id }}" type="hidden" value="{{ form.hospital_acct_id }}">
+		<input id="{{ fields.attending_dr_acct_id }}" name="{{ fields.attending_dr_acct_id }}" type="hidden" value="{{ form.attending_dr_acct_id }}">
+		<input id="{{ fields.attending_dr2_acct_id }}" name="{{ fields.attending_dr2_acct_id }}" type="hidden" value="{{ form.attending_dr2_acct_id }}">
+		<input id="{{ fields.hosp_clinician_acct_id }}" name="{{ fields.hosp_clinician_acct_id }}" type="hidden" value="{{ form.hosp_clinician_acct_id }}">
+		<input id="{{ fields.legal_aid_acct_id }}" name="{{ fields.legal_aid_acct_id }}" type="hidden" value="{{ form.legal_aid_acct_id }}">
+		<input id="{{ fields.legal_rep_acct_id }}" name="{{ fields.legal_rep_acct_id }}" type="hidden" value="{{ form.legal_rep_acct_id }}">
+		<input id="{{ fields.counsellor_acct_id }}" name="{{ fields.counsellor_acct_id }}" type="hidden" value="{{ form.counsellor_acct_id }}">		
+		<input id="{{ fields.event_id }}" name="{{ fields.event_id }}" type="hidden" value="{{ form.event_id }}">
+		<input id="{{ basket.parameters.primary_key }}" name="{{ basket.parameters.primary_key }}" type="hidden" value="{{ basket.primary_key }}">
+		<input id="{{ basket.parameters.root_id }}" name="{{ basket.parameters.root_id }}" type="hidden" value="{{ basket.root_id }}">		
+		<input id="{{ basket.parameters.account_root_id }}" name="{{ basket.parameters.account_root_id }}" type="hidden" value="{{ basket.account_root_id }}">
+		<input id="{{ fields.physio_acct_id }}" name="{{ fields.physio_acct_id }}" type="hidden" value="{{ form.physio_acct_id }}">
+		<input id="{{ fields.occup_acct_id }}" name="{{ fields.occup_acct_id }}" type="hidden" value="{{ form.occup_acct_id }}">
+		<input id="{{ fields.med_assessor_acct_id }}" name="{{ fields.med_assessor_acct_id }}" type="hidden" value="{{ form.med_assessor_acct_id }}">
+		<input id="{{ fields.psych_acct_id }}" name="{{ fields.psych_acct_id }}" value="{{ form.psych_acct_id }}" type="hidden">
+		<input id="{{ fields.interviewer_id }}" name="{{ fields.interviewer_id }}" value="{{ form.interviewer_id }}" type="hidden">
+        <input id="{{ fields.location_code }}" name="{{ fields.location_code }}" value="{{ form.location_code }}" type="hidden">
+	</div>
+</form>
+<div id="lookup-entries">
+	<div style="padding: 15px 0; text-align: center">
+		<input id="lookup-entry-no" name="lookup-entry-no" type="text" data-provide="typeahead" class="input-large" autocomplete="off">
+	</div>
+	<table id="lookup-entries-list" class="table table-bordered" style="margin: 10px 0">
+		<tr>
+			<th>Entry Date</th>
+			<th>Entry No.</th>
+			<th>CSU No.</th>
+			<th>General</th>
+			<th>Incident</th>
+			<th>Med. Assess.</th>
+			<th>Counsel</th>
+			<th>Physio</th>
+			<th>Occu. Therapy</th>
+			<th>Hosp</th>
+			<th>Legal</th>
+			<th>Psch.</th>
+		</tr>		
+	</table>
+	<div class="pagination" style="text-align: center; padding: 5px 0"><ul id="lookup-entries-pages"></ul></div>
+	<div style="padding: 10px 5px; text-align: right">
+		<button id="lookup-entries-close" class="btn">Close</button>
+	</div>
+</div>
+<div id="pop-witness" style="display: none">
+    <div>
+        <p>Use this dialog to enter or edit existing witnesses, or alternatively remove one</p>
+    </div>
+    <div>
+        <table class="table table-bordered">
+            <tr>
+                <td style="width: 15%"><span class="field-label">Witness Name</span></td>
+                <td style="width: 35%">
+                    <input id="{{ fields.witness_name }}" name="{{ fields.witness_name }}" type="text" class="input-xlarge" placeholder="{{ labels.witness_name }}">
+                </td>
+                <td style="width: 15%"><span class="field-label"></span></td>
+                <td>
+                    <input id="{{ fields.witness_id }}" name="{{ fields.witness_id }}" type="hidden" value="0">
+                </td>
+            </tr>
+            <tr>
+                <td><span class="field-label">Address or location</span></td>
+                <td><textarea id="{{ fields.witness_address }}" name="{{ fields.witness_address }}" rows="3" class="input-xlarge" placeholder="{{ labels.witness_address }}"></textarea></td>
+                <td><span class="field-label">Comments</span></td>
+                <td><textarea id="{{ fields.witness_remarks }}" name="{{ fields.witness_remarks }}" rows="3" class="input-xlarge" placeholder="{{ labels.witness_remarks }}"></textarea></td>
+            </tr>
+        </table>
+    </div>
+    <div id="witness-buttons" style="text-align: right; padding: 15px 5px">
+        <button id="btn-witness-close" class="btn" type="button">Close</button>
+        <button id="btn-witness-save" class="btn btn-primary" type="button">Save</button>
+        <button id="btn-witness-clear" class="btn btn-primary" type="button">Clear</button>
+        <button id="btn-witness-delete" class="btn btn-danger" type="button" style="display: none">Delete</button>
+    </div>
+    <div id="verified-by-dialog" style="display: none">
+        <div id="verified-dialog-content">{{ basket.dialog_html|safe }}</div>
+        <div style="padding: 10px; margin-top: 20px; text-align: right">
+            <button id="btn-verified-by-dialog" class="btn btn-primary" type="button">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block program %}
+<script>
+	var navlist = [];
+	var mypop = null;
+    var secVios = [];
+    var perpList = [];
+    var affilList = [];
+    var lookupSets = {
+        "med_assess": [],
+        "counsel": [],
+        "physio": [],
+        "occup": [],
+        "psych": [],
+        "legal": [],
+        "hosp": []
+    };
+    var refByList = [];
+
+	function whichSideMenu(s) {		
+		for (var i = 0; i < navlist.length; i++)
+			if (s == navlist[i]["key_name"]) $("#" + navlist[i]["key_name"]).addClass("active");
+			else $("#" + navlist[i]["key_name"]).removeClass();
+	}
+	
+	function whichBlock(s) {
+		var k = "";
+		
+		if (navlist.length) k = navlist[0]["box_name"];
+		
+		for (var i = 0; i < navlist.length; i++)
+			if (navlist[i]["key_name"] == s) {
+				k = navlist[i]["box_name"];
+				break;
+			}
+		
+		for (var i = 0; i < navlist.length; i++)
+			if (k == navlist[i]["box_name"]) $("#" + navlist[i]["box_name"]).show();
+			else $("#" + navlist[i]["box_name"]).hide();
+	}
+	
+	function saveEntry() {
+        var args = {};
+		var itms = {};
+        var callbk = function(data) {
+            getOtherData(data);
+            if (data.success) {
+                if (data["messages"].length != 0)
+                    displayMessageList(data["messages"], infoIcon);
+                else displayMessage(data.message, successIcon);
+                if (data["fields"].hasOwnProperty("refno"))
+                    if ($("#reference-no").length) $("#reference-no").html(data["fields"]["refno"]);
+                refillBrowseEntries(data["rows"]);
+                activePanel(data["page_menus"]);
+                if (data.hasOwnProperty("media_rows")) refillMediaFiles(data["media_rows"]);
+
+                getPeps(0);
+                getWitnesses(0);
+
+                if (data.hasOwnProperty("dialog_html"))
+                    $("#verified-dialog-content").html(data["dialog_html"]);
+            } else
+                if (data["errors"].length)
+                    displayMessageList(data["errors"], errorIcon);
+                else
+                    displayMessage(data["message"], errorIcon);
+        };
+		
+		//emptyHidden();
+		var lst = $("#f-entries").serializeArray();	
+		for (var i = 0; i < lst.length; i++) itms[lst[i].name] = lst[i].value;
+		
+		itms["{{ basket.parameters.query_key_name }}"] = $("#entry-browse-query-key").val();
+		if ($("#{{ fields.other_incident }}").is(":hidden")) $("#{{ fields.other_incident }}").val("");
+
+        var sesstypes = [];
+        $("input[name='counsel_session_type_list']:checked").each(function () {
+            sesstypes.push($(this).val());
+        });
+        itms["counsel_session_type_list"] = sesstypes;
+
+        args["showbusy"] = true;
+        ajaxOperation(args, itms, callbk);
+	}
+	
+	function deleteEntry() {
+		var itms = {};
+		
+		itms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+		itms["{{ basket.parameters.primary_key }}"] = $("#{{ basket.parameters.primary_key }}").val();
+		
+		$.ajax({ type: "POST", 
+			url: "{{ basket.urls.delete_entry }}/", 
+			data: itms, 
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";
+				else
+					if (data.success)
+						window.location.href = "{{ basket.urls.entry }}";
+					else
+						if (data.errors.length)
+							displayMessageList(data.errors, errorIcon);
+						else displayMessage(data.message, errorIcon);
+			}
+		});			
+	}
+	
+	function getAcctItems(dct) {			
+		$("#goto-account").text(dct["name"]);
+		$("#goto-account").attr("href", gotoAcctUrl(dct["id"]));
+		$("#nat-id").text(dct["my_national_id"]);
+		$("#age").text(dct["my_age"]);
+		$("#csu-no").text(dct["csu_no"]);
+		$("#{{ fields.acct_id }}").val(dct["id"]);
+	}
+
+	function putEventItems(dct) {
+		var s = "";
+		if (dct["event_date"].length) s = "<a href=\"" + dct["path"] + "\" target=\"_blank\">" + dct["event_date"] + "</a>";
+		$("#event-comments").text(dct["comments"]);
+		$("#event-date").html(s);
+		//if (dct["the_event_date"].length) $("#{{ fields.incident_date }}").val(dct["the_event_date"]);
+		$("#event-location").text(dct["address"]);
+		$("#{{ fields.event_id }}").val(dct["id"]);
+		$("#find-event-modal").dialog("close");
+	}
+	
+	function getBrowseEntries(pg) {
+		var itms = {};
+		
+		itms["{{ basket.parameters.page_no }}"] = pg;		
+		
+		var func = getBrowseEntries;
+		
+		$.ajax({ type: "POST", 
+			url: "{{ basket.urls.browse_entries }}/", 
+			data: itms, 
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";
+				else
+					if (data.success) {
+						refillBrowseEntries(data["rows"]);
+						putAnyPagination("#browse-entry-pages", data["paginate"], func);
+					} else
+						if (data.errors.length)
+							displayMessageList(data.errors, errorIcon);
+						else displayMessage(data.message, errorIcon);
+			}
+		});
+	}
+	
+	function refillBrowseEntries(rows) {
+		$("#browse-entries tr:gt(0)").remove();
+		
+		for (var i = 0; i < rows.length; i++) {
+			var s = "<tr>";
+			s += "<td><a href=\"" + rows[i]["entry_path"] + "\">" + rows[i]["_entry_no"] + "</a></td>";
+			s += "<td>" + rows[i]["entry_date"] + "</td>";
+			s += "<td>" + rows[i]["entry_refno"] + "</td>";
+			s += "<td><a href=\"" + rows[i]["acct_path"] + "\" target=\"_blank\">" + rows[i]["name"] + "</a></td>";
+			s += "<td>" + rows[i]["_csu_no"] + "</td>";
+			s += "<td>" + rows[i]["address"] + "</td>";
+			s += "<td>" + rows[i]["my_national_id"] + "</td>";
+			s += "</tr>";
+			
+			$("#browse-entries").append(s);
+		}
+	}
+	
+	function getMediaFiles(pgno) {
+		var itms = {};
+		
+		qfuncb = getMediaFiles;		
+		
+		itms["{{ basket.parameters.primary_key }}"] = $("#{{ basket.parameters.primary_key }}").val();
+		itms["{{ basket.parameters.account_root_id }}"] = $("#{{ basket.parameters.account_root_id }}").val();
+		itms["{{ basket.parameters.page_no }}"] = pgno;
+				
+		$.ajax({ type: "POST", 
+			url: "{{ basket.urls.get_entry_media }}/", 
+			data: itms, 
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";		
+				else
+					if (data.success) {
+						refillMediaFiles(data["rows"]);
+						if (data.can_paginate) putAnyPagination("#browse-file-uploads", data["paginate"], qfuncb);
+					} else
+						if (data.errors.length) displayMessageList(data.errors, errorIcon);
+						else displayMessage(data.message, errorIcon);
+			}
+		});
+	}
+	
+	function refillMediaFiles(rows) {
+		$("#file-uploads tr:gt(0)").remove();
+		for (var i = 0; i < rows.length; i++) {
+			var s = "<tr>";						
+			s += "<td><a href=\"" + rows[i]["download_path"] + "\" target=\"_blank\">" + rows[i]["filename"] + "</a></td>";
+			s += "<td>" + rows[i]["file_path"] + "</td>";			
+			s += "</tr>";
+						
+			$("#file-uploads").append(s);
+		}
+	}
+	
+	function savePep() {
+		var itms = new Object();
+        var callbk = getPeps;
+
+		itms["peps-num"] = 1;
+		itms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+
+        if ($("#{{ basket.parameters.perpetrator_name }}").val().length)
+            for (var p = 0; p < perpList.length; p++)
+                if (perpList[p]["ext_account_name"].toLowerCase() == $("#{{ basket.parameters.perpetrator_name }}").val().toLowerCase()) {
+                    itms["{{ basket.parameters.account_id }}"] = perpList[p]["account_id"];
+                    break;
+                }
+
+        if ($("#{{ basket.parameters.perpetrator_affiliation }}").val().length)
+            for (var a = 0; a < affilList.length; a++)
+                if (affilList[a]["ext_account_name"].toLowerCase() == $("#{{ basket.parameters.perpetrator_affiliation }}").val().toLowerCase()) {
+                    itms["{{ basket.parameters.perpetrator_affiliation_id }}"] = affilList[a]["id"];
+                    break;
+                }
+
+        itms["{{ basket.parameters.perpetrator_name }}"] = $("#{{ basket.parameters.perpetrator_name }}").val();
+        itms["{{ basket.parameters.perpetrator_affiliation }}"] = $("#{{ basket.parameters.perpetrator_affiliation }}").val();
+
+		$.ajax({ type: "POST", 
+			url: "{{ basket.urls.save_perpetrator }}/", 
+			data: itms, 
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";
+				else {
+					if (data.success) {
+                        $("#pep-pages").empty();
+                        refillPeps(data["rows"]);
+                        if (data["can_paginate"]) putAnyPagination("#pep-pages", data["paginate"], callbk);
+                        clearPerpForm();
+                        $("#btn-hide-perp").click();
+                    } else
+						if (data.errors.length)							
+							displayMessageList(data.errors, errorIcon);
+						else displayMessage(data.message, errorIcon);
+
+                    if (mypop != null)
+					    mypop.dialog("close");
+				}
+			}
+		});	
+	}
+	
+	function removePep(xid) {
+		var itms = new Object();
+		
+		itms["{{ basket.parameters.primary_key }}"] = xid;
+		itms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+		
+		$.ajax({ type: "POST", 
+			url: "{{ basket.urls.delete_perpetrator }}/", 
+			data: itms, 
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";
+				else {
+					if (data["success"]) {
+                        $("#pep-pages").empty();
+                        refillPeps(data["rows"]);
+                        if (data["can_paginate"]) putAnyPagination("#pep-pages", data["paginate"], callbk);
+                        clearPerpForm();
+                        $("#btn-hide-perp").click();
+                    } else
+						if (data.errors.length)
+							displayMessageList(data.errors, errorIcon);
+						else displayMessage(data.message, errorIcon);
+						
+					mypop.dialog("close");
+				}			
+			}
+		});
+	}
+
+    function editPepRow(data) {
+        $("#{{ basket.parameters.perpetrator_name }}").val(data["ext_account_name"]);
+        $("#{{ basket.parameters.perpetrator_affiliation }}").val(data["affiliation"]);
+        $("#perp-acct-delete-id").val(data["id"]);
+        $("#btn-show-perp").click();
+    }
+	
+	function pepItems(args) {
+		clearDynamicItems();
+		
+		$("#dynamic-any-text").hide();
+		$("#dyna-text-label").hide();
+		
+		$("#dyna-label-prompt").html("Remove perpetrators for: <strong>" + args["name"] + "</strong>");
+		$("#dyna-label-prompt").show();
+		
+		$("#btn-dynasearch-action-2").text("Remove");
+		$("#btn-dynasearch-action-2").click({ xid: args["acct_id"] }, function(event) {
+			removePep(event.data.xid);
+			$("#btn-dynasearch-close").click();
+		});		
+		$("#btn-dynasearch-action-2").show();	
+		$("#dyna-any-stuff").show();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Remove perpetrator", modal: true });
+	}
+	
+	function refillPeps(rows) {
+		$("#inc-peps tr:gt(0)").remove();
+		
+		for (var i = 0; i < rows.length; i++) {			
+			var s = "<tr>";
+			s += "<td><button type=\"button\"><i class=\"fa fa-pencil\"></i></button></td>";
+			s += "<td><a class=\"a-link\" href=\"" + rows[i]["path"] + "\" target=\"_blank\">" + rows[i]["ext_account_name"] + "</a></td>";
+			s += "<td>" + rows[i]["affiliation"] + "</td>";
+			s += "</tr>";
+			var obj = $(s);
+			obj.find("button").on("click", { itms: rows[i] }, function (event) {
+				editPepRow(event.data.itms);
+			});
+			$("#inc-peps").append(obj);
+		}
+	}
+	
+	function getPeps(pgno) {
+		var itms = {};
+		var callbk = getPeps;
+		
+		itms["{{ basket.parameters.entry_id }}"] = $("#{{ basket.parameters.primary_key }}").val();
+		itms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+		itms["{{ basket.parameters.query_key_name }}"] = $("#ebrowse-peps-query-key").val();
+		itms["{{ basket.parameters.page_no }}"] = pgno;
+		
+		$.ajax({ type: "POST", 
+			url: "{{ basket.urls.get_perpetrators }}/", 
+			data: itms, 
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";		
+				else
+					if (data.success) {
+                        $("#pep-pages").empty();
+						refillPeps(data.rows);
+                        putAnyPagination("#pep-pages", data["paginate"], callbk);
+                        clearPerpForm();
+                        $("#btn-hide-perp").click();
+					} else
+						if (data.errors.length)
+							displayMessageList(data.errors, errorIcon);
+						else displayMessage(data.message, errorIcon);
+			}
+		});
+	}
+
+    function clearPerpForm() {
+        $("#{{ basket.parameters.perpetrator_name }}").val("");
+        $("#{{ basket.parameters.perpetrator_affiliation }}").val("");
+        $("#perp-acct-delete-id").val("0");
+    }
+	
+	function refillIncidentTypeOptions(rows) {
+		$("#incident-type-items").empty();
+		
+		for (var i = 0; i < rows.length; i++) {
+			var s = "<li>";
+			
+			if (!rows[i]["is_other"]) {
+				s += "<label class=\"checkbox\">";
+				s += "<input id=\"" + rows[i]["ukey"] + "\" name=\"" + rows[i]["ukey"] + "\" type=\"checkbox\" style=\"margin-right: 6px\"" + (rows[i]["active"] ? " checked" : "") + "><span class=\"inc-sub-class\">" + rows[i]["type_incident_detail"] + "</span>";
+				s += "</label>";
+			} else {
+				s += "<input id=\"" + rows[i]["ukey"] + "\" name=\"" + rows[i]["ukey"] + "\" type=\"checkbox\" style=\"margin-right: 6px\"" + (rows[i]["active"] ? " checked" : "") + ">";
+				s += "<input id=\"" + rows[i]["other_ukey"] + "\" name=\"" + rows[i]["other_ukey"] + "\" class=\"input-medium\" type=\"text\" value=\"" + rows[i]["other_txt"] + "\" placeholder=\"" + rows[i]["type_incident_detail"] + "\">"				
+			}
+			
+			s += "</li>";
+			$("#incident-type-items").append(s);
+		}
+	}
+	
+	function getIncidentChildren(dct, callbk) {
+		var itms = {};
+		
+		itms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+		itms["{{ basket.parameters.incident_type }}"] = dct["lookup"];
+        itms["{{ basket.parameters.incident_mapping_key }}"] = dct["map_key"];
+		
+		$.ajax({ type: "POST", 
+			url: "{{ basket.urls.lookup_incident_type_children }}/",
+			data: itms, 
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";
+				else			
+					if (data.success) {
+                        if (dct["list_item_id"] == null)
+                            callbk(data["rows"]);
+                        else callbk(data["rows"], dct["list_item_id"]);
+                    } else {
+						if (data.errors.length) displayMessageList(data.errors, errorIcon);
+						else displayMessage(data.message, errorIcon);
+					}
+			},
+			error: function(xhr, xptions, xerror) {
+				alert(xhr.responseText);
+			}
+		});		
+	}
+
+	function whichIncidentDetail(s, mpky) {
+		$("#incident-type-options").slideDown();
+		$("#incident-type-items").empty();
+        var callbk = refillIncidentTypeOptions;
+        var dct = {'lookup': s, "map_key": mpky, "list_item_id": null};
+        getIncidentChildren(dct, callbk);
+	}
+	
+	function initNavlist() {
+		var obj = null;
+		
+		{% for d in basket.entry_page_menus %}
+		obj = new Object();
+		obj["key_name"] = "{{ d.key_name }}";
+		obj["label"] = "{{ d.key_val }}";
+		obj["box_name"] = "{{ d.box_name }}";
+		obj["xid"] = "{{ d.id }}";
+		navlist.push(obj);
+		{% endfor %}
+	}
+	
+	function currentPanel() {
+		var s = "";
+		
+		for (var i = 0; i < navlist.length; i++) {
+			var nid = "#" + navlist[i]["label_id"];
+			if ($(nid).is(":visible")) {
+				s = navlist[i]["key_name"];
+				break;
+			}
+		}
+		
+		return s;
+	}
+	
+	function currentActivePanel() {
+		var s = "";
+		
+		for (var i = 0; i < navlist.length; i++) {
+			var nid = "#" + navlist[i]["box_name"];
+			if ($(nid).is(":visible")) {
+				s = navlist[i]["box_name"];
+				break;
+			}
+		}
+		
+		return s;
+	}	
+	
+	function activePanel(panels) {
+		for (var i = 0; i < panels.length; i++)
+			if ($("#" + panels[i]["label_id"]).length)
+				if (panels[i]["active"])
+					$("#" + panels[i]["label_id"]).show();
+				else
+					$("#" + panels[i]["label_id"]).hide();		
+	}
+	
+	function emptyHidden() {
+		{% for v in basket.textboxes %}
+		if ($("#{{ v }}").length) if ($("#{{ v }}").is(":hidden")) $("#{{ v }}").val("");
+		{% endfor %}
+	}
+	
+	function clearPanel() {
+		//displayMessage("Work in progress come back later", "alert alert-info");
+		//return;
+
+        var spanel = currentActivePanel();
+		var nm = "#" + spanel;
+		
+		$(nm).find("select option:first-child").prop("selected", true);
+		$(nm).find(":checkbox").prop("checked", false);
+		$(nm).find(":radio").prop("checked", false);
+		$(nm).find(":text").val("");
+		$(nm).find("span:not([class])").text("");
+        $(nm).find("textarea").val("");
+
+        switch (spanel) {
+            case "general":
+                $("#btn-rmv-general-clinician").click();
+                $("#btn-rmv-general-doctor-acct").click();
+                $("#btn-rmv-general-specialist-acct").click();
+                break;
+            case "entry-incident-1":
+                $("#btn-clear-location-code").click();
+                $("#{{ fields.district_id }}").val("0");
+                break;
+            case "entry-incident-2":
+                break;
+            case "entry-incident-3":
+                $("#btn-rmv-interviewer-acct").click();
+                break;
+            case "med-assessment-1":
+                $("#btn-rmv-med-assessor").click();
+                break;
+            case "med-assessment-2":
+                break;
+            case "counselling-1":
+                $("#btn-rmv-counsellor").click();
+                break;
+            case "counselling-2":
+                $("#table-summary-scores").find("span[id]").text("");
+                break;
+            case "physiotherapy":
+                $("#btn-rmv-physiotherapist").click();
+                break;
+            case "occupational-therapy":
+                $("#btn-rmv-occu-therapist").click();
+                break;
+            case "psychiatry":
+                $("#btn-rmv-psych-acct").click();
+                break;
+            case "legal-issues":
+                $("#btn-rmv-legal-aid").click();
+                $("#btn-rmv-legal-rep-acct").click();
+                break;
+            case "hospitalization":
+                $("#btn-rmv-hospital").click();
+                $("#btn-rmv-doctor-acct").click();
+                $("#btn-rmv-hosp-clinician-acct").click();
+                $("#btn-rmv-doctor2-acct").click();
+                break;
+        }
+	}
+		
+	function gotoAcctUrl(i) {
+		return "{{ basket.urls.account }}/?{{ basket.parameters.primary_key }}=" + i.toString();
+	}
+	
+	function showRelatedEntry(x) {
+        /*
+		if (x.toLowerCase() == "Follow up".toLowerCase())
+			$("#{{ fields.correlate_entry_no }}").show();
+		else $("#{{ fields.correlate_entry_no }}").hide();
+		*/
+	}
+	
+	function refillLookupEntries(rows, callbk) {
+		$("#lookup-entries-list tr:gt(0)").remove();
+		
+		for (var i = 0; i < rows.length; i++) {
+			var s = "<tr>";
+			s += "<td>" + rows[i]["entry_date"] + "</td>";
+			s += "<td><span class=\"span-link\">" + rows[i]["_entry_no"] + "</span></td>";
+			s += "<td>" + rows[i]["_csu_no"] + "</td>";
+			s += "<td>" + (rows[i]["is_general"] ? "Yes" : "No") + "</td>";
+			s += "<td>" + (rows[i]["is_incident"] || rows[i]["is_dead_missing"] ? "Yes" : "No") + "</td>";
+			s += "<td>" + (rows[i]["is_med_assessment"] ? "Yes" : "No") + "</td>";
+			s += "<td>" + (rows[i]["is_counsel"] ? "Yes" : "No") + "</td>";
+			s += "<td>" + (rows[i]["is_physiotherapy"] ? "Yes" : "No") + "</td>";
+			s += "<td>" + (rows[i]["is_occupational_therapy"] ? "Yes" : "No") + "</td>";
+			s += "<td>" + (rows[i]["is_hospitalization"] ? "Yes" : "No") + "</td>";
+			s += "<td>" + (rows[i]["is_legal"] ? "Yes" : "No") + "</td>";
+			s += "<td>" + (rows[i]["is_psychiatry"] ? "Yes" : "No") + "</td>";			
+			s += "</tr>";
+			
+			var obj = $(s);
+			obj.find("span").click({ "datrow": rows[i] }, function (event) {
+				callbk(event.data.datrow);
+			});
+			$("#lookup-entries-list").append(obj);
+		}
+	}
+	
+	function lookupAccountEntries(txt, pgno, callbk) {
+		var itms = new Object();
+		
+		if (typeof pgno === "undefined") pgno = 0;
+		
+		itms["{{ basket.parameters.search_field }}"] = txt;
+		itms["{{ basket.parameters.account_id }}"] = $("#{{ fields.acct_id }}").val();
+		itms["{{ basket.parameters.page_no }}"] = pgno;
+		
+		var callbkpgnt = function (pg) {
+			var func = function (datarow) {				
+				$("#{{ fields.correlate_entry_no }}").val(datarow["_entry_no"]);
+				$("#lookup-entries-close").click();
+			};
+			lookupAccountEntries(txt, pg, func);
+		};
+		
+		$.ajax({ type: "POST", 
+			url: "{{ basket.urls.dynamic_account_entries }}/", 
+			data: itms, 
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin")) {
+					window.location.href = "{{ basket.urls.home }}";												
+				} else if (data["success"]) {					
+					refillLookupEntries(data["rows"], callbk);
+					if (data["can_paginate"]) putAnyPagination("#lookup-entries-pages", data["paginate"], callbkpgnt);
+					else $("#lookup-entries-pages").empty();
+				} else {
+					$("#lookup-entries-close").click();
+					if (data["errors"].length) displayMessageList(data["errors"], errorIcon);
+					else displayMessage(data["message"], errorIcon);
+				}				
+			},
+			error: function(xhr, xptions, xerror) {
+				$("#lookup-entries-close").click();
+				//displayMessage(xhr.responseText, "alert alert-error");
+				//spinStop();
+			}	
+		});		
+	}
+
+    function refillSecondaryChild(rows, domky) {
+        $(domky).empty();
+
+        for (var i = 0; i < rows.length; i++) {
+            var s = "<li class=\"simple-vertical\">";
+            s += "<input id=\"" + rows[i]["ukey"] + "\" name=\"" + rows[i]["ukey"] + "\" type=\"checkbox\" style=\"margin-right: 5px\"" + (rows[i]["active"] ? " checked" : "") + ">";
+            if (rows[i]["is_other"])
+                s += "<input id=\"" + rows[i]["other_ukey"] + "\" name=\"" + rows[i]["other_ukey"] + "\" class=\"input-medium\" type=\"text\" value=\"" + rows[i]["other_txt"] + "\" placeholder=\"" + rows[i]["type_incident_detail"] + "\">"
+            else s += rows[i]["type_incident_detail"]
+            s += "</li>";
+
+            $(domky).append(s);
+        }
+    }
+
+    function fillSecVioArray() {
+        {% for dct in basket.secondary_violation %}
+        var dct = {child_key: "{{ dct.child_key }}", type_incident_detail: "{{ dct.type_incident_detail }}", "ukey": "{{ dct.ukey }}"};
+        secVios.push(dct);
+        {% endfor %}
+    }
+
+    function initSecondaryChildren() {
+        for (var i = 0; i < secVios.length; i++) {
+            var itm = {"lookup": secVios[i]["type_incident_detail"], "map_key": "incident_mapping", "list_item_id": "#" + secVios[i]["child_key"]};
+
+            if ($("#" + secVios[i]["ukey"]).is(":checked")) {
+                var callbk = refillSecondaryChild;
+                getIncidentChildren(itm, callbk);
+            }
+        }
+    }
+
+    function editWitness(datrow) {
+        $("#{{ fields.witness_id }}").val(datrow["id"]);
+        $("#{{ fields.witness_name }}").val(datrow["witness_name"]);
+        $("#{{ fields.witness_address }}").val(datrow["address"]);
+        $("#{{ fields.witness_remarks }}").val(datrow["remarks"]);
+
+        showWitnessDialog();
+    }
+
+    function refillWitness(rows) {
+        $("#witnesses-table tr:gt(0)").remove();
+
+        for (var i = 0; i < rows.length; i++) {
+            var s = "<tr>";
+            s += "<td><button type=\"button\" style=\"margin-right: 5px\"><i class=\"fa fa-pencil\"></i></button>" + rows[i]["witness_name"] + "</td>";
+            s += "<td>" + rows[i]["address"] + "</td>";
+            s += "<td>" + rows[i]["remarks"] + "</td>";
+            s += "</tr>";
+
+            var obj = $(s);
+            obj.find("button").click({"row": rows[i]}, function (event) {
+                editWitness(event.data.row);
+            });
+
+            $("#witnesses-table").append(obj);
+        }
+    }
+
+    function showWitnessDialog() {
+        if (isOkay($("#{{ fields.witness_id }}").val()))
+            $("#btn-witness-delete").show();
+        else $("#btn-witness-delete").hide();
+
+        $("#pop-witness").dialog({ width: 850, title: "Witness" });
+    }
+
+    function saveWitness() {
+        var itms = new Object();
+
+        itms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+        itms["{{ fields.witness_id }}"] = $("#{{ fields.witness_id }}").val();
+        itms["{{ fields.witness_name }}"] = $("#{{ fields.witness_name }}").val();
+        itms["{{ fields.witness_address }}"] = $("#{{ fields.witness_address }}").val();
+        itms["{{ fields.witness_remarks }}"] = $("#{{ fields.witness_remarks }}").val();
+
+        $.ajax({ type: "POST",
+            url: "{{ basket.urls.save_witness }}/",
+            data: itms,
+            dataType: "json",
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            },
+            success: function (data) {
+                $("#btn-witness-close").click();
+
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";
+				else
+					if (data.success) {
+                        getOtherData(data);
+                        refillWitness(data["rows"]);
+                        $("#btn-witness-close").click();
+                        //displayMessage(data["message"], successIcon);
+                    } else
+                        if (data["errors"].length != 0) displayMessageList(data["errors"], errorIcon);
+                        else displayMessage(data["message"], errorIcon);
+            },
+            error: function(xhr, xptions, xerror) {
+                alert(xhr.responseText);
+            }
+        });
+    }
+
+    function deleteWitness() {
+        var itms = new Object();
+        var callbk = getWitnesses;
+
+        itms["{{ basket.parameters.witness_id }}"] = $("#{{ fields.witness_id }}").val();
+        itms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+
+        $.ajax({ type: "POST",
+            url: "{{ basket.urls.delete_witness }}/",
+            data: itms,
+            dataType: "json",
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            },
+            success: function (data) {
+                $("#btn-witness-close").click();
+
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";
+				else
+					if (data.success) {
+                        refillWitness(data["rows"]);
+                        displayMessage(data["message"], successIcon);
+                        if (data.can_paginate) putAnyPagination("#witness-pages", data.paginate, callbk);
+                    } else
+                        if (data["errors"].length != 0) displayMessageList(data["errors"], errorIcon);
+                        else displayMessage(data["message"], errorIcon);
+            },
+            error: function(xhr, xptions, xerror) {
+                alert(xhr.responseText);
+            }
+        });
+    }
+
+	function getWitnesses(pgno) {
+		var itms = {};
+		var callbk = getWitnesses;
+
+		itms["{{ basket.parameters.entry_id }}"] = $("#{{ fields.entry_id }}").val();
+		itms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+		itms["{{ basket.parameters.page_no }}"] = pgno;
+
+		$.ajax({ type: "POST",
+			url: "{{ basket.urls.lookup_witnesses }}/",
+			data: itms,
+			dataType: "json",
+			beforeSend: function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			},
+			success: function (data) {
+				if (data.hasOwnProperty("require_signin"))
+					window.location.href = "{{ basket.urls.home }}";
+				else
+					if (data.success) {
+						refillWitness(data.rows);
+						if (data.can_paginate) putAnyPagination("#witness-pages", data.paginate, callbk);
+					} else
+						if (data.errors.length)
+							displayMessageList(data.errors, errorIcon);
+						else displayMessage(data.message, errorIcon);
+			},
+            error: function(xhr, xptions, xerror) {
+                spinStop();
+                alert(xhr.responseText);
+            }
+		});
+	}
+
+    function refillVictimAffiliations(controlid, rows, callbk) {
+        $(controlid + " tr:gt(0)").remove();
+
+        for (var i = 0; i < rows.length; i++) {
+            var s = "<tr>";
+            s += "<td>";
+            s += "<button type=\"button\"><i class=\"fa fa-pencil\"></i></button>";
+            s += "</td>";
+            s += "<td>";
+            s += "<a href=\"" + rows[i]["path"] + "\" target=\"_blank\">" + rows[i]["affiliation_account"] + "</a>";
+            s += "</td>";
+            s += "<td>" + rows[i]["aff_role"] + "</td>";
+            s += "</tr>";
+
+            var obj = $(s);
+            obj.find("button").click({"datitems": rows[i]}, function (e) {
+                callbk(e.data.datitems);
+            });
+            $(controlid).append(obj);
+        }
+    }
+
+    function victimAffiliationPopUp(datitems) {
+        var obj = {};
+        var s, bttn;
+
+        obj["title"] = "Remove Affiliation";
+        s = "<table class=\"table table-bordered\">";
+        s += "<tr>";
+        s += "<td style=\"width: 25%\">";
+        s += "<div style=\"padding: 0 0 2%\"><strong>Edit Affiliation</strong></div>";
+        s += "<div><i class=\"fa fa-question-circle fa-3x\"></i></div>";
+        s += "</td>";
+        s += "<td>";
+        s += "<div style=\"padding: 0 0 2%\">Change Affiliation Role (Click the <strong>Change</strong> button)</div>";
+        s += "<div><input id=\"xaff_role\" name=\"xaff_role\" type=\"text\" class=\"input-small\" value=\"" + (!$.isEmptyObject(datitems) ? datitems["aff_role"] : "") + "\"></div>";
+        s += "</td>";
+        s += "</tr>";
+        s += "</table>";
+
+        obj["header"] = s;
+        obj["content"] = "";
+        obj["footer"] = [];
+
+        s = "<button type=\"button\" class=\"btn btn-default\" style=\"margin-right: 20px\">Cancel</button>";
+        bttn = $(s);
+        bttn.click(function () {
+            closeSimpleDialog();
+        });
+        obj["footer"].push(bttn);
+
+        s = "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-right: 20px\">Change</button>";
+        bttn = $(s);
+        bttn.click({"dict": datitems}, function (e) {
+            var obj = {};
+            if (!$.isEmptyObject(e.data.dict))
+                for (var k in e.data.dict)
+                    if (e.data.dict.hasOwnProperty(k))
+                        obj[k] = e.data.dict[k];
+
+            obj["aff_role"] = $("#xaff_role").val();
+            obj["xid"] = 0;
+            obj["{{ basket.parameters.account_id }}"] = obj["affiliation_acct_id"];
+            obj["{{ basket.parameters.root_id }}"] = obj["root_id"];
+            writeVictimAffiliation(obj);
+        });
+        obj["footer"].push(bttn);
+
+        s = "<button id=\"btn-x-rmv-aff\" type=\"button\" class=\"btn btn-primary\">Remove</button>";
+        bttn = $(s);
+        bttn.click({"datrow": datitems }, function (e) {
+            var obj = {};
+            if (!$.isEmptyObject(e.data.datrow))
+                for (var k in e.data.datrow)
+                    if (e.data.datrow.hasOwnProperty(k))
+                        obj[k] = e.data.datrow[k];
+            obj["xid"] = obj["id"];
+            obj["id"] = 0;
+            obj["{{ basket.parameters.account_id }}"] = obj["affiliation_acct_id"];
+            obj["{{ basket.parameters.root_id }}"] = obj["root_id"];
+            deleteVictimAffiliation(obj);
+        });
+        obj["footer"].push(bttn);
+
+        obj["width"] = 700;
+        showSimpleDialog(obj);
+    }
+
+    function getVictimAffiliations(pgno) {
+        var prms = {};
+        var args = {};
+
+        args["path"] = "{% url 'get-affiliation' %}";
+
+        prms["{{ basket.parameters.page_no }}"] = (typeof pgno === "undefined") ? 0 : pgno;
+        prms["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+
+        var callbk = function (data) {
+            if (data["success"]) {
+                var rowclick = function (datitems) {
+                        victimAffiliationPopUp(datitems);
+                };
+                refillVictimAffiliations("#affiliations-list", data["rows"], rowclick);
+                putAnyPagination("#affiliation-pages", data["paginate"], getVictimAffiliations);
+            } else displayMessageList(data["errors"], "<i class=\"fa fa-exclamation-triangle\"></i>");
+        };
+        ajaxOperation(args, prms, callbk);
+    }
+
+    function writeVictimAffiliation(obj) {
+        var prms = {};
+        var args = {};
+
+        args["path"] = "{% url 'save-affiliation' %}";
+
+        if (!$.isEmptyObject(obj))
+            for (var k in obj)
+                if (obj.hasOwnProperty(k))
+                    prms[k] = obj[k];
+
+        var callbk = function (data) {
+            if (data["success"]) {
+                var rowclick = function (datitems) {
+                        victimAffiliationPopUp(datitems);
+                };
+                refillVictimAffiliations("#affiliations-list", data["rows"], rowclick);
+                putAnyPagination("#affiliation-pages", data["paginate"], getVictimAffiliations);
+                closeSimpleDialog();
+            } else displayMessageList(data["errors"], "<i class=\"fa fa-exclamation-triangle\"></i>");
+        };
+        ajaxOperation(args, prms, callbk);
+    }
+
+    function deleteVictimAffiliation(obj) {
+        var prms = {};
+        var args = {};
+
+        args["path"] = "{% url 'remove-affiliation' %}";
+
+        if (!$.isEmptyObject(obj))
+            for (var k in obj)
+                if (obj.hasOwnProperty(k))
+                    prms[k] = obj[k];
+
+        var callbk = function (data) {
+            if (data["success"]) {
+                var rowclick = function (datitems) {
+                        victimAffiliationPopUp(datitems);
+                };
+                refillVictimAffiliations("#affiliations-list", data["rows"], rowclick);
+                putAnyPagination("#affiliation-pages", data["paginate"], getVictimAffiliations);
+                closeSimpleDialog();
+            } else displayMessageList(data["errors"], "<i class=\"fa fa-exclamation-triangle\"></i>");
+        };
+        ajaxOperation(args, prms, callbk);
+    }
+
+    (function () {
+        $("#{{ basket.parameters.perpetrator_name }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    perpList = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["ext_account_name"]);
+                            perpList.push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-search-attribute' %}";
+                prms["{{ basket.parameters.dynamic_search_key }}"] = query;
+                prms["{{ basket.parameters.attribute_list }}"] = "is_perpetrator";
+                prms["{{ basket.parameters.operand }}"] = $("#{{ basket.parameters.operand }}").val();
+
+                ajaxOperation(args, prms, callbk);
+            },
+            items: 16,
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            }
+        });
+
+        $("#{{ basket.parameters.perpetrator_affiliation }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    affilList = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["ext_account_name"]);
+                            affilList.push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-search-attribute' %}";
+                prms["{{ basket.parameters.dynamic_search_key }}"] = query;
+                prms["{{ basket.parameters.attribute_list }}"] = "is_org";
+
+                ajaxOperation(args, prms, callbk);
+            },
+            items: 16,
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            }
+        });
+    })();
+
+	$(document).ready(function() {
+		$("#{{ fields.entry_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.cnlcn_assess_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.physio_assess_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.admitted_on }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.discharged_on }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.legal_assess_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });		
+		$("#{{ fields.counsel_assess_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.occup_assess_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		
+		$("#{{ fields.detained_on }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.released_on }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.last_experience }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.incident_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.action_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.med_assess_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.trial_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.general_assess_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		
+		$("#{{ fields.death_date }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+		$("#{{ fields.last_seen }}").datepicker({ dateFormat: "dd/mm/yy", changeYear: true, yearRange: "-20:+1" });
+
+        $("#{{ fields.verify_data_entry }}").popover({placement: "top", trigger: "hover", content: "{{ dictionary.verify_data_entry_tip }}"});
+
+		initNavlist();
+		getBrowseEntries(0);
+		
+		if (navlist.length) {
+			whichSideMenu(navlist[0]["key_name"]);
+			whichBlock(navlist[0]["key_name"]);
+		}
+		getMediaFiles(0);
+		getPeps(0);
+        getVictimAffiliations(0);
+
+        var s = $("#inc-list").find("input:checked").parent().find("span").text();
+        if (typeof s === "undefined") s = "";
+		whichIncidentDetail(s, "primary_incident_mapping");
+				
+		{% if form.acct_id %}
+		$("#goto-account").attr("href", gotoAcctUrl({{ form.acct_id }}));
+		{% endif %}
+		
+		refreshDistricts("{{ form.province_id }}", "#{{ fields.district_id }}", "{{ form.district_id }}");
+		
+		$("#{{ fields.correlate_entry_no }}").popover({ content: "{{ dictionary.correlate_content }}" });
+        $("#{{ fields.med_assess_correlate_entry_no }}").popover({ content: "{{ dictionary.correlate_content_other }}" });
+        $("#{{ fields.counsel_correlate_entry_no }}").popover({ content: "{{ dictionary.correlate_content_other }}" });
+        $("#{{ fields.physio_correlate_entry_no }}").popover({ content: "{{ dictionary.correlate_content_other }}" });
+        $("#{{ fields.occup_correlate_entry_no }}").popover({ content: "{{ dictionary.correlate_content_other }}" });
+        $("#{{ fields.psych_correlate_entry_no }}").popover({ content: "{{ dictionary.correlate_content_other }}" });
+        $("#{{ fields.legal_correlate_entry_no }}").popover({ content: "{{ dictionary.correlate_content_other }}" });
+        $("#{{ fields.hosp_correlate_entry_no }}").popover({ content: "{{ dictionary.correlate_content_other }}" });
+
+		//showRelatedEntry("{{ form.general_visit_type }}");
+
+        fillSecVioArray();
+        initSecondaryChildren();
+        getWitnesses(0);
+
+        var callbkp = fillLookupProvinces;
+        lookupProvinces(callbkp);
+        var callbkd = fillLookupDistricts;
+        lookupDistricts("", callbkd);
+        var callbkf = fillLookupFacilityTypes;
+        lookupFacilityTypes(callbkf);
+		
+	});
+	
+	$("#btn-new-entry").on("click", function () { 
+		var s = "{{ basket.urls.entry }}/";
+		var v = $("#{{ fields.event_id }}").val();
+		if (isOkay(v)) s += "?{{ basket.parameters.event_id }}=" + v;
+		window.location.href = s;
+	});
+	
+	$("#btn-save-entry").on("click", function () {
+		if (isOkay($("#{{ fields.event_id }}").val())) {
+			$("#confirm-label").text("Save event entry");
+			$("#confirm-descript").text("Are you sure this entry must be associated with the specified event");
+			$("#confirm-close").text("Cancel");
+			$("#confirm-go").text("Save");
+			$("#confirm-go").off();
+			$("#confirm-go").on("click", function () {
+				saveEntry();
+				$("#confirm-modal").dialog("close");
+			});	
+			$("#confirm-modal").dialog({title: "Delete entry ?", modal: true, width: 600});						
+		} else saveEntry();
+	});
+	
+	$("#btn-delete-entry").on("click", function () {
+		$("#confirm-label").text("Delete entry");
+		$("#confirm-descript").text("Are you sure you want to delete current entry");
+		$("#confirm-close").text("Cancel");
+		$("#confirm-go").text("Delete");
+		$("#confirm-go").off();
+		$("#confirm-go").on("click", function () {
+			deleteEntry();
+			$("#confirm-modal").dialog("close");
+		});	
+		$("#confirm-modal").dialog({title: "Delete entry ?", modal: true, width: 600});
+	});
+	
+	$("#btn-clear-panel").on("click", function () {
+		clearPanel();
+	});	
+	
+	$("#btn-select-acct").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				getAcctItems(datrow); $("#btn-dynasearch-close").click();
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });
+	});
+
+	$("#btn-rmv-acct").on("click", function () {
+		$("#goto-account").text("");
+		$("#goto-account").attr("href", "#");
+		$("#nat-id").text("");
+		$("#sex").text("");
+		$("#age").text("");
+		$("#csu-no").text("");
+		$("#{{ form.legacy_csu_no }}").text("");
+		$("#{{ fields.acct_id }}").val(0);
+	});
+	
+	$("#btn-legal-rep-acct").on("click", function () {	
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.legal_rep_acct_id }}").val(datrow["id"]);
+				$("#legal-rep-acct").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });			
+	});
+	$("#btn-rmv-legal-rep-acct").on("click", function () {
+		$("#{{ fields.legal_rep_acct_id }}").val(0);
+		$("#legal-rep-acct").text("");
+	});
+	
+	$("#btn-doctor-acct").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.attending_dr_acct_id }}").val(datrow["id"]);
+				$("#attending-dr-acct").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });		
+	});
+	
+	$("#btn-rmv-doctor-acct").on("click", function () {
+		$("#{{ fields.attending_dr_acct_id }}").val(0);
+		$("#attending-dr-acct").text("");
+	});
+	
+	$("#btn-doctor2-acct").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.attending_dr2_acct_id }}").val(datrow["id"]);
+				$("#attending-dr2-acct").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });		
+	});
+	
+	$("#btn-rmv-doctor2-acct").on("click", function () {
+		$("#{{ fields.attending_dr2_acct_id }}").val(0);
+		$("#attending-dr2-acct").text("");
+	});	
+	
+	$("#btn-hospital").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.hospital_acct_id }}").val(datrow["id"]);
+				$("#hospital-acct").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });		
+	});
+	$("#btn-rmv-hospital").on("click", function () {
+		$("#{{ fields.hospital_acct_id }}").val(0);
+		$("#hospital-acct").text("");
+	});
+	
+	$("#btn-hosp-clinician-acct").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.hosp_clinician_acct_id }}").val(datrow["id"]);
+				$("#hosp-clinician-acct").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });		
+	});
+	$("#btn-rmv-hosp-clinician-acct").on("click", function () {
+		$("#{{ fields.hosp_clinician_acct_id }}").val(0);
+		$("#hosp-clinician-acct").text("");
+	});
+	
+	$("#btn-legal-aid").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.legal_aid_acct_id }}").val(datrow["id"]);
+				$("#legal-aid-acct").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });		
+	});
+	
+	$("#btn-rmv-legal-aid").on("click", function () {
+		$("#{{ fields.legal_aid_acct_id }}").val(0);
+		$("#legal-aid-acct").text("");
+	});
+	
+	$("#btn-event").on("click", function () {
+		$("#find-event-fields option:first").attr("selected","selected");
+		handleEventFind($("#find-event-fields").val());
+		
+		qfunca = putEventItems;
+		qfuncb = findEvent;		
+		$("#find-event-list tr:gt(0)").remove();
+		$("#find-event-paginate").empty();
+		$("#find-event-message").slideUp();
+		$("#find-event-modal").dialog({ width: 800, modal: true, title: "Find event to link entry to" });
+	});
+	
+	$("#btn-event-search").on("click", function () {
+		findEvent(0);
+	});
+	
+	$("#btn-rmv-event").on("click", function () {
+		$("#event-comments").text("");
+		$("#event-date").text("");
+		$("#event-location").text("");
+		$("#{{ fields.event_id }}").val(0);
+	});
+	
+	// calculations
+	
+	$("#shona-symptom-q-con input:checkbox").on("change", function () {
+		var nm = 0;
+		$("#shona-symptom-q-con input:checkbox").each(function () {
+			if ($(this).prop("checked")) ++nm;
+		});
+		$("#{{ fields.con_score_symptom }}").val(nm);
+		$("#calc_con_score_symptom").text(nm);
+	});
+	
+	$("#sleep-counsel select").on("change", function () {
+		var nm = 0;
+		$("#sleep-counsel select").each(function () {
+			var i = aNum($(this).val());
+			nm += i;
+		});
+		
+		$("#{{ fields.con_score_sleep }}").val(nm);
+		$("#calc_con_score_sleep").text(nm);
+	});
+	
+	$("#physical-counsel select").on("change", function () {
+		var nm = 0;
+		$("#physical-counsel select").each(function () {
+			var i = aNum($(this).val());
+			nm += i;
+		});
+		
+		$("#{{ fields.con_score_physical }}").val(nm);
+		$("#calc_con_score_physical").text(nm);
+	});
+	
+	$("#quality-life-counsel select").on("change", function () {
+		var nm = 0;
+		$("#quality-life-counsel select").each(function () {
+			var i = aNum($(this).val());
+			nm += i;
+		});
+		
+		$("#{{ fields.con_score_quality }}").val(nm);
+		$("#calc_con_score_quality").text(nm);
+	});
+	
+	// --
+	
+	$("#{{ fields.con_score_symptom }}").on("change", function () { $("#calc_con_score_symptom").text($(this).val()); });
+	$("#{{ fields.con_score_sleep }}").on("change", function () { $("#calc_con_score_sleep").text($(this).val()); });
+	$("#{{ fields.con_score_physical }}").on("change", function () { $("#calc_con_score_physical").text($(this).val()); });
+	$("#{{ fields.con_score_quality }}").on("change", function () { $("#calc_con_score_quality").text($(this).val()); });	
+	
+	// end calculations
+	
+	$("#entry-navigate li").on("click", function () {
+		var s = $(this).attr("id");
+		whichSideMenu(s);
+		whichBlock(s);
+	});
+
+    $("#entry-navigate li a").on("click", function (event) {
+        event.preventDefault();
+    });
+	
+	$("#select-pep").on("click", function () {
+		clearDynamicItems();
+
+        $("#dyna-any-stuff").hide();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				//savePep(datrow["id"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+
+        /* ended here */
+
+		$("#dyna-lookup-box").show();
+		$("#dynamic-results").show();		
+		//enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find perpetrator account", modal: true });
+	});
+	
+	$("#{{ fields.province_id }}").on("change", function () {
+		refreshDistricts($(this).val(), "#{{ fields.district_id }}", $("#{{ form.district_id }}").val());
+	});
+	
+	$("#btn-select-agency").on("click", function () {	
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.rpt_agency_acct_id }}").val(datrow["id"]);
+				$("#rpt_agency_acct_name").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });		
+	});
+	
+	$("#btn-remove-agency").on("click", function () {
+		$("#{{ fields.rpt_agency_acct_id }}").val(0);
+		$("#{{ fields.rpt_agency_acct_name }}").html("");
+	});
+	
+	$("input[name='{{ fields.incident_detail_id }}']").on("click", function () {
+
+		var s = $(this).parent().find("span").text();
+
+        if (typeof s === "undefined") s = "";
+		whichIncidentDetail(s, "primary_incident_mapping");
+	});
+	
+	$("#btn-physiotherapist").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.physio_acct_id }}").val(datrow["account_id"]);
+				$("#physiotherapist-name").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			// dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            var attribs = "{{ dictionary.medical_specializations }}";
+            dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, attribs);
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });	
+	});
+	$("#btn-rmv-physiotherapist").on("click", function () {
+		$("#{{ fields.physio_acct_id }}").val(0);
+		$("#physiotherapist-name").text("");
+	});	
+	
+	$("#btn-occu-therapist").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.occup_acct_id }}").val(datrow["account_id"]);
+				$("#occu-therapist-name").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			// dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            var attribs = "{{ dictionary.medical_specializations }}";
+            dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, attribs);
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });	
+	});
+	$("#btn-rmv-occu-therapist").on("click", function () {
+		$("#{{ fields.occup_acct_id }}").val(0);
+		$("#occu-therapist-name").text("");
+	});
+	
+	$("#btn-med-assessor").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.med_assessor_acct_id }}").val(datrow["account_id"]);
+				$("#med-assessor-acct").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			//dynamicSearch($(this).val(), "#dynamic-results", callbk);
+
+            var attribs = "{{ dictionary.medical_specializations }}";
+            dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, attribs);
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });	
+	});
+	$("#btn-rmv-med-assessor").on("click", function () {
+		$("#{{ fields.med_assessor_acct_id }}").val(0);
+		$("#med-assessor-acct").text("");
+	});	
+	
+	$("#btn-counsellor").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.counsellor_acct_id }}").val(datrow["account_id"]);
+				$("#counsellor-name").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			// dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            var attribs = "{{ dictionary.medical_specializations }}";
+            dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, attribs);
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });	
+	});
+	$("#btn-rmv-counsellor").on("click", function () {
+		$("#{{ fields.counsellor_acct_id }}").val(0);
+		$("#counsellor-name").text("");
+	});
+	
+	$("#btn-general-doctor-acct").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.general_doctor_acct_id }}").val(datrow["id"]);
+				$("#{{ fields.general_doctor }}").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            //var s = "{{ dictionary.medical_specializations }}";
+            //dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, s, {"can_paginate": false});
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });	
+	});	
+	$("#btn-rmv-general-doctor-acct").on("click", function () {
+		$("#{{ fields.general_doctor_acct_id }}").val(0);
+		$("#{{ fields.general_doctor }}").text("");
+	});
+	
+	$("#btn-general-specialist-acct").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.general_specialist_acct_id }}").val(datrow["id"]);
+				$("#{{ fields.general_specialist }}").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            //var s = "{{ dictionary.medical_specializations }}";
+            //dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, s, {"can_paginate": false});
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });	
+	});
+	$("#btn-rmv-general-specialist-acct").on("click", function () {
+		$("#{{ fields.general_specialist_acct_id }}").val(0);
+		$("#{{ fields.general_specialist }}").text("");
+	});
+
+	$("#btn-general-specialist2-acct").on("click", function () {
+		clearDynamicItems();
+
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.general_specialist2_acct_id }}").val(datrow["id"]);
+				$("#{{ fields.general_specialist2 }}").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();
+			};
+			//dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            var s = "{{ dictionary.medical_specializations }}";
+            dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, s, {"can_paginate": false});
+		});
+
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });
+	});
+	$("#btn-rmv-general-specialist2-acct").on("click", function () {
+		$("#{{ fields.general_specialist2_acct_id }}").val(0);
+		$("#{{ fields.general_specialist2 }}").text("");
+	});
+
+	$("#btn-general-specialist3-acct").on("click", function () {
+		clearDynamicItems();
+
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.general_specialist3_acct_id }}").val(datrow["id"]);
+				$("#{{ fields.general_specialist3 }}").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            //var s = "{{ dictionary.medical_specializations }}";
+            //dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, s, {"can_paginate": false});
+		});
+
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });
+	});
+	$("#btn-rmv-general-specialist3-acct").on("click", function () {
+		$("#{{ fields.general_specialist3_acct_id }}").val(0);
+		$("#{{ fields.general_specialist3 }}").text("");
+	});
+	
+	$("#btn-general-clinician").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.general_clinician_acct_id }}").val(datrow["id"]);
+				$("#{{ fields.general_clinician }}").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			//dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            var s = "{{ dictionary.medical_specializations }}";
+            dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, s, {"can_paginate": false});
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find account", modal: true });	
+	});
+	$("#btn-rmv-general-clinician").on("click", function () {
+		$("#{{ fields.general_clinician_acct_id }}").val(0);
+		$("#{{ fields.general_clinician }}").text("");
+	});
+	
+	$("#btn-interviewer-acct").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.interviewer_id }}").val(datrow["id"]);
+				$("#{{ fields.interviewer_name }}").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			dynamicSearch($(this).val(), "#dynamic-results", callbk);			
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Interviewer's name", modal: true });	
+	});
+	$("#btn-rmv-interviewer-acct").on("click", function () {
+		$("#{{ fields.interviewer_id }}").val(0);
+		$("#{{ fields.interviewer_name }}").text("");
+	});	
+	
+	$("#btn-psych-acct").on("click", function () {
+		clearDynamicItems();
+		
+		$("#dynamic-text").keyup(function () {
+			var callbk = function (datrow) {
+				$("#{{ fields.psych_acct_id }}").val(datrow["account_id"]);
+				$("#{{ fields.psych_acct }}").text(datrow["name"]);
+				$("#btn-dynasearch-close").click();				
+			};
+			// dynamicSearch($(this).val(), "#dynamic-results", callbk);
+            var attribs = "{{ dictionary.medical_specializations }}";
+            dynamicAttributeSearch($(this).val(), "#dynamic-results", callbk, attribs);
+		});
+		
+		enableDynaSearchControls();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find psychiatrist's account", modal: true });	
+	});
+	$("#btn-rmv-psych-acct").on("click", function () {
+		$("#{{ fields.psych_acct_id }}").val(0);
+		$("#{{ fields.psych_acct }}").text("");
+	});		
+	
+	$("#{{ fields.admitted_on }}").on("change", function () {
+		var x = daysDiff($("#{{ fields.admitted_on }}").val(), $("#{{ fields.discharged_on }}").val());
+		$("#days_hospitalised").html(x);
+	});
+	
+	$("#{{ fields.discharged_on }}").on("change", function () {
+		var x = daysDiff($("#{{ fields.admitted_on }}").val(), $("#{{ fields.discharged_on }}").val());
+		$("#days_hospitalised").html(x);
+	});	
+	
+	$("#{{ fields.general_visit_type }}").on("change", function () {
+		//showRelatedEntry($(this).val());
+	});
+	
+	$("#lookup-entries-close").click(function () {
+		$("#lookup-entries").dialog("close");
+	});
+	
+	$("#lookup-entry-no").keyup(function () {
+		var callbk = function (datarow) {
+			$("#{{ fields.correlate_entry_no }}").val(datarow["_entry_no"]);
+			$("#lookup-entries-close").click();
+		};
+		
+		lookupAccountEntries($(this).val(), 0, callbk);
+	});
+	
+	$("#{{ fields.correlate_entry_no }}").dblclick(function () {
+		var callbk = function (datarow) {
+			$("#{{ fields.correlate_entry_no }}").val(datarow["_entry_no"]);
+			$("#lookup-entries-close").click();
+		};
+		
+		lookupAccountEntries("", 0, callbk);
+		
+		$("#lookup-entries").dialog({ modal: true, width: 1000, title: "Look up initial entry number" });
+	});
+
+    $(".secondary-vio-item").click(function () {
+        var chkd = $(this).is(":checked");
+        if (!chkd) {
+            $(this).parent().parent().find(".secondary-children").empty();
+            return;
+        }
+
+        var s = $(this).parent().find("span").text();
+
+        if (typeof s === "undefined") s = "";
+
+        var sid = $(this).parent().parent().find(".secondary-children").attr("id");
+        var callbk = refillSecondaryChild;
+        var dct = {'lookup': s, "map_key": "incident_mapping", "list_item_id": "#" + sid};
+        getIncidentChildren(dct, callbk);
+    });
+
+    $("#select-witness").click(function () {
+        showWitnessDialog();
+    });
+
+    $("#btn-witness-save").click(function () { saveWitness(); });
+
+    $("#btn-witness-close").click(function () {
+        $("#pop-witness").dialog("close");
+    });
+
+    $("#btn-witness-clear").click(function () {
+        $("#{{ fields.witness_id }}").val(0);
+        $("#{{ fields.witness_name }}").val("");
+        $("#{{ fields.witness_address }}").val("");
+        $("#{{ fields.witness_remarks }}").val("");
+        $("#btn-witness-delete").hide();
+    });
+
+    $("#btn-witness-delete").click(function () {
+		$("#confirm-label").text("Delete witness");
+		$("#confirm-descript").text("Are you sure you want to delete current witness");
+		$("#confirm-close").text("Cancel");
+		$("#confirm-go").text("Delete");
+		$("#confirm-go").off();
+		$("#confirm-go").on("click", function () { deleteWitness(); $("#confirm-close").click(); $("#btn-witness-close").click(); });
+		$("#confirm-modal").dialog({title: "Delete witness ?", modal: true, width: 600});
+    });
+
+    $("#btn-lookup-coords").click(function () {
+        clearCoordDialog();
+        $("#lookup-geo-coordinates").dialog({ width: 980, title: "Lookup latitude, longitude coordinates"});
+    });
+
+    $("#btn-clear-location-code").click(function () {
+        $("#location-code").text("");
+        $("#{{ fields.location_code }}").val("");
+    });
+
+    $("#btn-add-affiliation").click(function () {
+		clearDynamicItems();
+
+		$("#dynamic-text").keyup(function () {
+            var itms = {};
+			itms["onclick"] = function (datrow) {
+                var obj = {};
+                if (!(typeof datrow === "undefined"))
+                    for (var k in datrow)
+                        if (datrow.hasOwnProperty(k))
+                            obj[k] = datrow[k];
+                obj["{{ basket.parameters.root_id }}"] = $("#{{ basket.parameters.root_id }}").val();
+                obj["aff_role"] = $("#dynamic-any-text").val();
+                writeVictimAffiliation(obj);
+				$("#btn-dynasearch-close").click();
+			};
+
+            itms["args"] = {};
+            itms["params"] = {};
+
+            itms["args"]["path"] = "{% url 'dynamic-search-org' %}";
+            itms["params"]["{{ basket.parameters.dynamic_search_key }}"] = $(this).val();
+
+            dynamicOrgSearch(itms);
+			//dynamicSearch($(this).val(), "#dynamic-results", callbk);
+		});
+
+		enableDynaSearchControls();
+        $("#dyna-any-stuff").show();
+        $("#dynamic-any-text").show();
+        $("#dyna-text-label").html("Role in Organisation");
+        $("#dyna-text-label").show();
+		$("#dynamic-search-box").dialog({ width: 900, title: "Find orgaisation victim affiliated to", modal: true });
+    });
+
+    $("#btn-show-perp").click(function () {
+        $("#add-perp-box").slideDown();
+    });
+
+    $("#btn-hide-perp").click(function () {
+        $("#add-perp-box").slideUp();
+    });
+
+    $("#btn-add-perp").click(function() {
+        savePep();
+    });
+
+    $("#btn-rmv-perp").click(function() {
+        if (!isOkay($("#perp-acct-delete-id").val())) {
+            displayMessage("Nothing deleted", errorIcon);
+            return;
+        }
+
+        removePep($("#perp-acct-delete-id").val());
+    });
+</script>
+<script>
+    (function () {
+        $("#{{ fields.med_assess_correlate_entry_no }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    lookupSets["med_assess"] = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["attributes"]);
+                            lookupSets["med_assess"].push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-account-entries' %}";
+                prms["{{ basket.parameters.search_field }}"] = query;
+                prms["{{ basket.parameters.account_id }}"] = $("#{{ fields.acct_id }}").val();
+                prms["{{ basket.parameters.entry_no }}"] = $("#{{ fields.legacy_entry_no }}").val();
+
+                ajaxOperation(args, prms, callbk);
+            },
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            },
+            items: 12,
+            updater: function (itm) {
+                var s = itm;
+                if (s.length) {
+                    var list = s.split(":");
+                    if (list.length) s = list[0].trim();
+                }
+                return s
+            }
+        });
+
+        $("#{{ fields.counsel_correlate_entry_no }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    lookupSets["counsel"] = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["attributes"]);
+                            lookupSets["counsel"].push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-account-entries' %}";
+                prms["{{ basket.parameters.search_field }}"] = query;
+                prms["{{ basket.parameters.account_id }}"] = $("#{{ fields.acct_id }}").val();
+                prms["{{ basket.parameters.entry_no }}"] = $("#{{ fields.legacy_entry_no }}").val();
+
+                ajaxOperation(args, prms, callbk);
+            },
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            },
+            items: 12
+        });
+
+        $("#{{ fields.physio_correlate_entry_no }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    lookupSets["physio"] = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["attributes"]);
+                            lookupSets["physio"].push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-account-entries' %}";
+                prms["{{ basket.parameters.search_field }}"] = query;
+                prms["{{ basket.parameters.account_id }}"] = $("#{{ fields.acct_id }}").val();
+                prms["{{ basket.parameters.entry_no }}"] = $("#{{ fields.legacy_entry_no }}").val();
+
+                ajaxOperation(args, prms, callbk);
+            },
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            },
+            items: 12
+        });
+
+        $("#{{ fields.occup_correlate_entry_no }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    lookupSets["occup"] = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["attributes"]);
+                            lookupSets["occup"].push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-account-entries' %}";
+                prms["{{ basket.parameters.search_field }}"] = query;
+                prms["{{ basket.parameters.account_id }}"] = $("#{{ fields.acct_id }}").val();
+                prms["{{ basket.parameters.entry_no }}"] = $("#{{ fields.legacy_entry_no }}").val();
+
+                ajaxOperation(args, prms, callbk);
+            },
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            },
+            items: 12
+        });
+
+        $("#{{ fields.psych_correlate_entry_no }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    lookupSets["psych"] = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["attributes"]);
+                            lookupSets["psych"].push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-account-entries' %}";
+                prms["{{ basket.parameters.search_field }}"] = query;
+                prms["{{ basket.parameters.account_id }}"] = $("#{{ fields.acct_id }}").val();
+                prms["{{ basket.parameters.entry_no }}"] = $("#{{ fields.legacy_entry_no }}").val();
+
+                ajaxOperation(args, prms, callbk);
+            },
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            },
+            items: 12
+        });
+
+        $("#{{ fields.legal_correlate_entry_no }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    lookupSets["legal"] = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["attributes"]);
+                            lookupSets["legal"].push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-account-entries' %}";
+                prms["{{ basket.parameters.search_field }}"] = query;
+                prms["{{ basket.parameters.account_id }}"] = $("#{{ fields.acct_id }}").val();
+                prms["{{ basket.parameters.entry_no }}"] = $("#{{ fields.legacy_entry_no }}").val();
+
+                ajaxOperation(args, prms, callbk);
+            },
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            },
+            items: 12
+        });
+
+        $("#{{ fields.hosp_correlate_entry_no }}").typeahead({
+            source: function(query, process) {
+                var args = {};
+                var prms = {};
+                var callbk = function (data) {
+                    var rows = [];
+                    lookupSets["hosp"] = [];
+
+                    if (data["rows"].length)
+                        for (var i = 0; i < data["rows"].length; i++) {
+                            rows.push(data["rows"][i]["attributes"]);
+                            lookupSets["hosp"].push(data["rows"][i]);
+                        }
+                    process(rows);
+                };
+
+                args["path"] = "{% url 'dynamic-account-entries' %}";
+                prms["{{ basket.parameters.search_field }}"] = query;
+                prms["{{ basket.parameters.account_id }}"] = $("#{{ fields.acct_id }}").val();
+                prms["{{ basket.parameters.entry_no }}"] = $("#{{ fields.legacy_entry_no }}").val();
+
+                ajaxOperation(args, prms, callbk);
+            },
+            highlighter: function(itm) {
+                return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+            },
+            items: 12
+        });
+    })();
+
+    $("#verified-by-who").click(function () {
+        $("#verified-by-dialog").dialog({width: 500, title: "Verified By"});
+    });
+
+    $("#btn-verified-by-dialog").click(function () {
+        $("#verified-by-dialog").dialog("close");
+    });
+
+    $("#{{ fields.general_referredby }}").typeahead({
+        source: function(query, process) {
+            var args = {};
+            var prms = {};
+            var callbk = function (data) {
+                var rows = [];
+                refByList = [];
+
+                if (data["rows"].length)
+                    for (var i = 0; i < data["rows"].length; i++) {
+                        rows.push(data["rows"][i]['account_name']);
+                        refByList.push(data["rows"][i]);
+                    }
+                process(rows);
+            };
+
+            args["path"] = "{% url 'dynamic-search-org' %}";
+            prms["{{ basket.parameters.dynamic_search_key }}"] = query;
+
+            ajaxOperation(args, prms, callbk);
+        },
+        items: 16,
+        highlighter: function(itm) {
+            return "<div class=\"dynamic-list-item\">" + itm + "</div>";
+        }
+    });
+</script>
+{% endblock %}
